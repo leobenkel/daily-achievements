@@ -1,5 +1,8 @@
 # daily-achievements
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/a5539525-5cdd-4bb6-990f-1b1e0ef8ad0a/deploy-status)](https://app.netlify.com/sites/daily-achievements/deploys)
+
+[Open](https://daily-achievements.netlify.app/)
 
 # Dev
 

@@ -1,0 +1,14 @@
+@import "vars";
+
+.btn {
+    border-radius: 8px;
+    padding: 8px;
+    background-color: $button_background;
+    color: $button_color;
+
+    &.btn-lrg {
+        min-width: 30vw;
+        width: 100%;
+        max-width: 100px;
+    }
+}

@@ -1,0 +1,103 @@
+/* Main Structure */
+
+@import "vars";
+
+html {
+    height: 100%;
+    min-height: 100%;
+    width: 100%;
+}
+
+body {
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    background-color: $background_color;
+    align-items: center;
+    /* OLD - iOS 6-, Safari 3.1-6, BB7 */
+    display: -webkit-box;
+    /* TWEENER - IE 10 */
+    display: -ms-flexbox;
+    /* NEW - Safari 6.1+. iOS 7.1+, BB10 */
+    display: -webkit-flex;
+    /* NEW, Spec - Firefox, Chrome, Opera */
+    display: flex;
+    max-width: 100%;
+    flex-basis: auto;
+    flex-shrink: 0;
+    justify-content: center;
+    margin: 0;
+    min-height: 100%;
+    color: $text_color;
+}
+
+li *,
+li > *,
+p > *,
+p *,
+* {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    font-family: Roboto;
+    color: $text_color;
+    /* https://www.bennadel.com/blog/3627-desktop-safari-seems-to-add-extra-padding-to-css-flexbox-item-inside-list-item.htm */
+    list-style-type: none;
+    font-weight: normal;
+}
+
+a {
+    cursor: pointer;
+    text-decoration: none;
+    -webkit-user-select: none;
+    /* Safari */
+    -moz-user-select: none;
+    /* Firefox */
+    -ms-user-select: none;
+    /* IE10+/Edge */
+    user-select: none;
+    /* Standard */
+}
+
+p {
+    margin-top: 0;
+    margin-inline-end: 0px;
+    margin-inline-start: 0px;
+    margin-block-start: 0px;
+    margin-block-end: 16px;
+    font-weight: normal;
+}
+
+span.strong {
+    color: $accent_color;
+    font-weight: 900;
+    filter: brightness(111%);
+}
+
+p a,
+ul.p-block li a {
+    -webkit-user-select: auto;
+    /* Safari */
+    -moz-user-select: auto;
+    /* Firefox */
+    -ms-user-select: auto;
+    /* IE10+/Edge */
+    user-select: auto;
+    /* Standard */
+
+    color: $link_color;
+    font-weight: bolder;
+}
+
+div p:last-child {
+    margin-bottom: 0;
+}
+
+.text-small-comment {
+    font-size: 0.6em;
+    text-align: right;
+}
+
+.hidden {
+    display: none !important;
+}

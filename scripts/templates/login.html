@@ -1,0 +1,55 @@
+<div id="contact-form">
+    <form id="login-form" class="page-content" method="POST">
+        <div class="row input-container">
+            <div class="styled-input wide">
+                <input name="name" type="text" required autocomplete="off" />
+                <label>Name</label>
+            </div>
+            <div class="divider">
+                <h2>Database</h2>
+            </div>
+            <div class="styled-input wide">
+                <input name="URI" type="text" placeholder="postgres://username:psw@host:port/database"
+                    autocomplete="off" />
+                <label>Uri</label>
+            </div>
+
+            <div class="divider">
+                <h3>Details</h3>
+            </div>
+            <div class="form-login-details">
+                <div class="styled-input wide">
+                    <input name="Host" type="text" required autocomplete="off" />
+                    <label>Host</label>
+                </div>
+
+                <div class="styled-input wide">
+                    <input name="Port" type="number" placeholder="5432" autocomplete="off" />
+                    <label>Port</label>
+                </div>
+
+                <div class="styled-input wide">
+                    <input name="Database" type="text" required autocomplete="off" />
+                    <label>Database</label>
+                </div>
+
+                <div class="styled-input wide">
+                    <input name="User" type="text" required autocomplete="off" />
+                    <label>User</label>
+                </div>
+
+                <div class="styled-input wide">
+                    <input name="Password" type="password" required autocomplete="off" />
+                    <label>Password</label>
+                </div>
+            </div>
+
+            <div class="submit-wrapper">
+                <button type="submit" class="btn btn-lrg submit-btn cta-button "
+                    data-callback='onSubmit'>Connect</button>
+            </div>
+
+            <div class="error empty">&nbsp;</div>
+        </div>
+    </form>
+</div>

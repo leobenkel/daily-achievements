@@ -1,0 +1,140 @@
+/* contact */
+
+@import "vars";
+
+#contact-form {
+    max-width: 100%;
+    padding: 16px;
+
+    .error {
+        color: #e08199;
+        text-align: center;
+        margin-bottom: 16px;
+        margin-top: 16px;
+        border-radius: 8px;
+        padding: 8px;
+        opacity: 1;
+        -webkit-transition: all 0.225s ease;
+        transition: all 0.225s ease;
+        background-color: $background_color;
+        filter: brightness(92%);
+
+        &.empty {
+            opacity: 0;
+            -webkit-user-select: none;
+            /* Safari */
+            -moz-user-select: none;
+            /* Firefox */
+            -ms-user-select: none;
+            /* IE10+/Edge */
+            user-select: none;
+            /* Standard */
+        }
+    }
+
+    .divider {
+        padding: 0 32px;
+    }
+
+    input:focus ~ label,
+    textarea:focus ~ label,
+    input:valid ~ label,
+    textarea:valid ~ label {
+        font-size: 0.75em;
+        top: -5px;
+        -webkit-transition: all 0.225s ease;
+        transition: all 0.225s ease;
+    }
+
+    .styled-input {
+        width: 293px;
+        margin: 1rem 0;
+        position: relative;
+        border-radius: 8px;
+    }
+
+    @media only screen and (max-width: 768px) {
+        .styled-input {
+            width: 100%;
+        }
+    }
+
+    .styled-input label {
+        padding: 1.3rem 30px 1rem 30px;
+        position: absolute;
+        top: 10px;
+        left: 0;
+        -webkit-transition: all 0.25s ease;
+        transition: all 0.25s ease;
+        pointer-events: none;
+    }
+
+    .styled-input.wide {
+        width: 650px;
+        max-width: 100%;
+    }
+
+    input,
+    textarea {
+        padding: 30px;
+        border: 0;
+        width: 100%;
+        font-size: 1rem;
+        background-color: $background_color;
+        filter: brightness(92%);
+        font-weight: bold;
+        border-radius: 8px;
+    }
+
+    textarea {
+        resize: vertical;
+    }
+
+    input:focus,
+    textarea:focus {
+        outline: 0;
+    }
+
+    input:focus ~ span,
+    textarea:focus ~ span {
+        width: 100%;
+        -webkit-transition: all 0.075s ease;
+        transition: all 0.075s ease;
+    }
+
+    textarea {
+        width: 100%;
+        min-height: 15em;
+    }
+
+    .input-container {
+        width: 650px;
+        max-width: 100%;
+        margin: 20px auto 25px auto;
+    }
+
+    .submit-wrapper {
+        /* OLD - iOS 6-, Safari 3.1-6, BB7 */
+        display: -webkit-box;
+        /* TWEENER - IE 10 */
+        display: -ms-flexbox;
+        /* NEW - Safari 6.1+. iOS 7.1+, BB10 */
+        display: -webkit-flex;
+        /* NEW, Spec - Firefox, Chrome, Opera */
+        display: flex;
+        max-width: 100%;
+        flex-basis: auto;
+        flex-shrink: 0;
+        justify-content: center;
+    }
+
+    .submit-btn {
+        display: inline-block;
+        cursor: pointer;
+        text-align: center;
+        border: none;
+        font: inherit;
+        font-size: 1.5em;
+        align-self: center;
+    }
+}
