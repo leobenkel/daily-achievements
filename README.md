@@ -22,3 +22,8 @@ and run
     --media-cache-size=1 \
     --disk-cache-size=1
 ```
+
+
+# Useful links
+
+* https://dev.to/prisma/how-to-setup-a-free-postgresql-database-on-heroku-1dc1
