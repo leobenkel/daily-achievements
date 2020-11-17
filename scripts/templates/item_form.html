@@ -1,0 +1,21 @@
+<fieldset class="add-item-block" form="new-note-form" name="item[]">
+    <legend>Item</legend>
+    <input name="item>ITEM_COUNT>item_id" class="item-id" type="hidden" required />
+
+    <div class="styled-input wide styled-select">
+        <select name="item>ITEM_COUNT>tag" class="item-tag-select" required>
+            <option disabled selected value> -- select a Tag -- </option>
+        </select>
+
+        <label>Tag</label>
+    </div>
+
+    <div class="styled-input wide">
+        <input name="item>ITEM_COUNT>content" type="text" placeholder="What have you accomplished?" />
+        <label>Content</label>
+    </div>
+
+    <div class="styled-input wide submit-wrapper">
+        <button type="button" class="btn btn-lrg delete-item-btn">Delete</button>
+    </div>
+</fieldset>

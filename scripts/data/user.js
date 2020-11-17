@@ -1,43 +1,24 @@
 define([
-    'scripts/util/local-storage.js'
+    'scripts/util/local-storage.js',
+    'scripts/data/database.js'
 ],
-    function (storage) {
-        let getCurrentUserName = function () {
-            return storage.get("currentUser");
-        };
-
+    function (storage, db) {
         let isConnected = function () {
-            return !!getCurrentUserName();
+            return !!getUser();
         };
 
-        let getCurrentUser = function () {
-            let users = JSON.parse(storage.get('users', '{}'));
-            let currentUser = getCurrentUserName();
-            let names = _.keys(users);
-
-            let config
-            if (currentUser) {
-                config = users[currentUser];
-            } else if (names.length > 0) {
-                registerUser(names[0], users[names[0]]);
-                return getCurrentUser();
-            } else {
-                config = {};
-            }
-
-            return config;
+        let getUser = function () {
+            let user = JSON.parse(storage.get('users'));
+            return user;
         }
 
-        let registerUser = function (currentUser, data) {
-            let users = JSON.parse(storage.get('users', '{}'));
-            users[currentUser] = data;
-            storage.set('users', JSON.stringify(users));
-            storage.set('currentUser', currentUser);
+        let registerUser = function (data) {
+            storage.set('users', JSON.stringify(data));
         };
 
         return {
             isConnected: isConnected,
             registerUser: registerUser,
-            getCurrentUser: getCurrentUser
+            get: getUser
         }
     });

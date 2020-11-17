@@ -1,14 +1,14 @@
 define([
     '/scripts/core/controller.js',
-    '/scripts/core/navigator.js',
+    '/scripts/data/database.js',
     'jquery',
     'lodash'
 ],
-    function (controller, $, _) {
+    function (controller, db, $, _) {
         return {
             render: function () {
                 return controller.make("home", "Home", function () {
-
+                    return db.init();
                 }).render();
             }
         }

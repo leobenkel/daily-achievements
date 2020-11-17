@@ -13,5 +13,12 @@ define([], function () {
         return date;
     };
 
-    return convertDate;
+    let today = function () {
+        return new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    }
+
+    return {
+        today: today,
+        convertDate: convertDate
+    };
 });

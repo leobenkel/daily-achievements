@@ -1,9 +1,10 @@
 define([
     '/scripts/util/cache.js',
     '/scripts/data/user.js',
+    '/scripts/ui/engine.js',
     'jquery'
 ],
-    function (cache, user, $) {
+    function (cache, user, engine, $) {
         let renderPage = function (indexTemplate) {
             let template = $(indexTemplate);
             $('#mainContent').empty().append(template);
@@ -42,8 +43,12 @@ define([
 
         let handleConnection = function () {
             if (user.isConnected()) {
+                let name = user.get()['name'];
                 $('#nav #connect').text("Logout");
                 $('#nav #connect').attr("href", '#!logout');
+
+                $('#nav #updateLogin').text(`Update '${name}'`);
+                $('#nav #updateLogin').removeClass('hidden');
             } else {
                 $('#nav #connect').text("Login");
                 $('#nav #connect').attr("href", '#!login');
@@ -58,7 +63,11 @@ define([
                     $(".page_name").text(title);
                     $("html, body").animate({ scrollTop: 0 }, "slow");
                     handleConnection();
-                    renderSVG(cb)
+                    renderSVG(function () {
+                        cb().then(function () {
+                            engine.run();
+                        });
+                    });
                 },
                 function (err) {
                     console.error(err);
@@ -80,7 +89,6 @@ define([
                 return {
                     render: switchScreen(name, title, render)
                 };
-                ;
             }
         }
     });

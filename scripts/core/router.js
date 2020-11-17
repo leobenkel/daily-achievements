@@ -9,13 +9,7 @@ define([
         let routes = [
             { hash: ['', 'home'], controller: 'home' },
             userCreateRoute,
-            { hash: ['advising'], controller: 'advising' },
-            { hash: ['teaching'], controller: 'teaching' },
-            { hash: ['speaking'], controller: 'speaking' },
-            { hash: ['contact'], controller: 'contact' },
-            { hash: ['degrees'], controller: 'degrees' },
-            { hash: ['thanks'], controller: 'thanks' },
-            { hash: ['recommendations'], controller: 'recommendations' },
+            { hash: ['newNote'], controller: 'new-note' },
         ];
 
         let defaultRoute = '';

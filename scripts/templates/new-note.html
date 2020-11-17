@@ -1,0 +1,27 @@
+<div id="custom-form">
+    <form id="new-note-form" class="page-content" method="POST">
+        <div class="row input-container">
+            <input name="note-id" type="hidden" required />
+            <input name="author-id" type="hidden" required />
+
+            <div class="styled-input wide">
+                <input name="date" type="text" disabled />
+                <label>Date</label>
+            </div>
+
+            <div id="item-container">
+
+            </div>
+
+            <div class="styled-input wide submit-wrapper">
+                <button id="add-item" type="button" class="btn btn-lrg">Add Item</button>
+            </div>
+
+            <div class="submit-wrapper">
+                <button type="submit" class="btn btn-lrg submit-btn" disabled>Save</button>
+            </div>
+
+            <div class="error empty">&nbsp;</div>
+        </div>
+    </form>
+</div>
