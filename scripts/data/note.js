@@ -12,7 +12,7 @@ define([
         let tableName = "Notes"
 
         let save = function (data) {
-            return db.save(tableName, data.id, data);
+            return db.save(tableName, data.note_id, data);
         }
 
         let fetchOne = function (id) {

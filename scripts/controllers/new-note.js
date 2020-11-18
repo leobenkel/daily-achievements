@@ -3,6 +3,8 @@ define([
     '/scripts/data/database.js',
     '/scripts/data/user.js',
     '/scripts/data/tag.js',
+    '/scripts/data/item.js',
+    '/scripts/data/note.js',
     '/scripts/util/date.js',
     '/scripts/ui/engine.js',
     'jquery',
@@ -10,7 +12,7 @@ define([
     `text!/scripts/templates/item_form.html`,
     `text!/scripts/templates/tag_form.html`,
 ],
-    function (controller, db, user, tag, date, uiEngine, $, _, itemForm, tagForm) {
+    function (controller, db, user, tag, item, note, date, uiEngine, $, _, itemForm, tagForm) {
         let tagFormF = $(tagForm);
         tag.initForm(tagFormF, true, function (allTags) {
             initSelect($('.item-tag-select'), allTags.data)
@@ -37,13 +39,13 @@ define([
 
         let setupInputHidden = function (form) {
             let authorName = user.get()['name'];
-            form.find('input[name="author-id"]').val(authorName);
+            form.find('input[name="author_id"]').val(authorName);
 
             let today = date.today();
             form.find('input[name="date"]').val(today);
 
             let note_id = `${authorName}-${today}`
-            form.find('input[name="note-id"]').val(note_id);
+            form.find('input[name="note_id"]').val(note_id);
 
             return note_id;
         };
@@ -77,7 +79,6 @@ define([
                 // Item ID
                 let item_count = form.find('.add-item-block').length;
                 let itemF = $(itemForm.replaceAll("ITEM_COUNT", item_count));
-                itemF.find('input.item-id').val(`${note_id}-${item_count}`);
 
                 // Tag selector
                 let tagSelect = itemF.find('.item-tag-select');
@@ -120,18 +121,35 @@ define([
                 values.forEach(function (row) {
                     let name = row['name'];
                     let value = row['value'];
-                    let names = name.split('>');
-                    let anchor = toSave;
-                    for (n in names) {
-                        if (!(n in anchor)) {
-                            anchor[n] = {}
-                        }
-                        anchor = anchor[n]
-                    }
-
-                    toSave[name] = value;
+                    _.set(toSave, name, value);
                 });
                 console.log(toSave);
+
+                let itemsToSave = toSave.item
+                    .map(function (itm, i) {
+                        itm['note_id'] = toSave['note_id'];
+                        itm['item_id'] = `${toSave['note_id']}-${i}`;
+                        return itm;
+                    });
+
+                itemsToSave
+                    .map(function (itm) {
+                        return function () { return item.save(itm); }
+                    })
+                    .reduce(function (prev, cur) {
+                        return prev.then(cur);
+                    }, Promise.resolve())
+                    .then(function (items) {
+                        let noteData = {
+                            author_id: toSave['author_id'],
+                            note_id: toSave['note_id'],
+                            date: toSave['date'],
+                            item_ids: itemsToSave.map(function (itm) {
+                                return itm.item_id;
+                            })
+                        };
+                        return note.save(noteData);
+                    })
 
                 return false;
             });

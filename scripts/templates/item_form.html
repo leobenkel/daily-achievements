@@ -1,9 +1,7 @@
-<fieldset class="add-item-block" form="new-note-form" name="item[]">
+<fieldset class="add-item-block" form="new-note-form" name="item">
     <legend>Item</legend>
-    <input name="item>ITEM_COUNT>item_id" class="item-id" type="hidden" required />
-
     <div class="styled-input wide styled-select">
-        <select name="item>ITEM_COUNT>tag" class="item-tag-select" data-required="true">
+        <select name="item.ITEM_COUNT.tag_id" class="item-tag-select" data-required="true">
 
         </select>
 
@@ -11,7 +9,7 @@
     </div>
 
     <div class="styled-input wide">
-        <input name="item>ITEM_COUNT>content" type="text" placeholder="What have you accomplished?" />
+        <input name="item.ITEM_COUNT.content" type="text" placeholder="What have you accomplished?" />
         <label>Content</label>
     </div>
 
