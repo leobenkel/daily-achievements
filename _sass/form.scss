@@ -2,7 +2,7 @@
 
 @import "vars";
 
-#custom-form {
+.custom-form {
     max-width: 100%;
     padding: 16px;
 
@@ -150,6 +150,7 @@
     .styled-select {
         position: relative;
         padding-top: 36px;
+        z-index: 80;
 
         label {
             top: -6px;

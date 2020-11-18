@@ -63,23 +63,31 @@ define([
                     },
                     type: 'GET',
                 })
+                    // Promise.resolve(JSON.parse('[{"name":"undefined.json","path":"db/Tags/undefined.json","sha":"08f4cc03d2b7a940bc6b345bec98f0e9c4d6a527","size":32,"url":"https://api.github.com/repos/leobenkel-db/daily-achievements-Leo/contents/db/Tags/undefined.json?ref=main","html_url":"https://github.com/leobenkel-db/daily-achievements-Leo/blob/main/db/Tags/undefined.json","git_url":"https://api.github.com/repos/leobenkel-db/daily-achievements-Leo/git/blobs/08f4cc03d2b7a940bc6b345bec98f0e9c4d6a527","download_url":"https://raw.githubusercontent.com/leobenkel-db/daily-achievements-Leo/main/db/Tags/undefined.json?token=ARZG3RJPTGKHAZKWA3DIK327WU5CC","type":"file","_links":{"self":"https://api.github.com/repos/leobenkel-db/daily-achievements-Leo/contents/db/Tags/undefined.json?ref=main","git":"https://api.github.com/repos/leobenkel-db/daily-achievements-Leo/git/blobs/08f4cc03d2b7a940bc6b345bec98f0e9c4d6a527","html":"https://github.com/leobenkel-db/daily-achievements-Leo/blob/main/db/Tags/undefined.json"}}]'))
                     .then(function (data) {
-                        console.log(data);
-                        // let content = my_atob(data.content);
-                        // let parsed = $.parseJSON(content);
-                        // return Promise.resolve({
-                        //     data: parsed,
-                        //     sha: data.sha
-                        // });
-                        throw 'need implementation';
+                        let validData = data.map(function (e) {
+                            return {
+                                name: e.name.replaceAll('.json', ''),
+                                path: e.path,
+                                sha: e.sha,
+                                url: e.url,
+                            };
+                        });
+                        return Promise.resolve({ data: validData });
                     })
                     .catch(function (error) {
+                        if (error.responseJSON.message == "Not Found") {
+                            return myself.createDatabase().then(function () {
+                                return myself.getTable(table);
+                            });
+                        }
                         if (error.responseJSON.message == "This repository is empty.") {
                             return Promise.resolve({
                                 data: []
                             });
                         }
 
+                        console.error(error);
                         return Promise.reject(error);
                     });
             }
@@ -166,12 +174,17 @@ define([
                         });
                     })
                     .catch(function (error) {
-                        if (error.responseJSON.errors[0].message == "name already exists on this account") {
-                            return Promise.resolve({
-                                success: true
-                            })
+                        try {
+                            if (error.responseJSON.errors[0].message == "name already exists on this account") {
+                                return Promise.resolve({
+                                    success: true
+                                })
+                            }
+                        } catch {
+
                         }
 
+                        console.error(error);
                         return Promise.reject(error);
                     });
             };

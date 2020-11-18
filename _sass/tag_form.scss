@@ -1,0 +1,13 @@
+.tag-form {
+    .title,
+    .close-btn {
+        display: none;
+    }
+
+    &.popup {
+        .title,
+        .close-btn {
+            display: inline;
+        }
+    }
+}

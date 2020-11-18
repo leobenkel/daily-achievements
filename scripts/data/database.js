@@ -5,6 +5,7 @@ define([
     function (userHandler, gh) {
         let getGHClient = function () {
             let user = userHandler.get();
+            // console.log(user);
             let ghClient = gh(user.name, user.githubUsername, user.githubToken);
             return ghClient;
         }
