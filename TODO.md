@@ -11,3 +11,4 @@
 * tag form on one line
 * Tag focus on first input when open popup
 * item form: blocks are too big
+* Hide jquery error in console

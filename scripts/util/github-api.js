@@ -87,7 +87,6 @@ define([
                             });
                         }
 
-                        console.error(error);
                         return Promise.reject(error);
                     });
             }
@@ -136,7 +135,6 @@ define([
                 });
             };
 
-
             myself.createDatabase = function () {
                 // https://stackoverflow.com/a/13315588/3357831
                 // curl -i -H 'Authorization: token TOKENHERE' -d '{"name":":NAME"}' https://api.github.com/user/repos
@@ -184,7 +182,6 @@ define([
 
                         }
 
-                        console.error(error);
                         return Promise.reject(error);
                     });
             };

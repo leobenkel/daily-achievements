@@ -101,7 +101,7 @@ define([
                 let form = $(this);
                 resetError(form);
                 let values = form.serializeArray();
-                console.log(values);
+                // console.log(values);
                 let toSave = {};
 
                 // check failed inputs
@@ -123,8 +123,9 @@ define([
                     let value = row['value'];
                     _.set(toSave, name, value);
                 });
-                console.log(toSave);
+                // console.log(toSave);
 
+                // extract items to save
                 let itemsToSave = toSave.item
                     .map(function (itm, i) {
                         itm['note_id'] = toSave['note_id'];
@@ -132,6 +133,7 @@ define([
                         return itm;
                     });
 
+                // save items and note
                 itemsToSave
                     .map(function (itm) {
                         return function () { return item.save(itm); }
@@ -149,6 +151,9 @@ define([
                             })
                         };
                         return note.save(noteData);
+                    })
+                    .then(function () {
+                        // redirect is needed here !
                     })
 
                 return false;
