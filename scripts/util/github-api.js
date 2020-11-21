@@ -1,33 +1,34 @@
 define([
+    'github',
     'jquery',
     'lodash',
 ],
-    function ($, _) {
+    function (GitHub, $, _) {
         let rootURL = 'https://api.github.com';
 
         return function (name, githubUsername, token) {
-            let myself = this;
-            myself.name = name;
-            myself.authToken = token;
-            myself.githubUsername = githubUsername;
-            myself.organizationName = myself.githubUsername;
-            myself.databaseStorageRepoName = `daily-achievements-${myself.name}`;
+            let authToken = token;
+            let organizationName = githubUsername;
+            let databaseStorageRepoName = `daily-achievements-${name}`;
 
-            myself.getData = function (table, id) {
+            let authPayload = {
+                username: githubUsername,
+                token: authToken
+            };
+            // http://github-tools.github.io/github/docs/3.2.3/index.html
+            let githubClient = new GitHub(authPayload);
+
+            // http://github-tools.github.io/github/docs/3.2.3/GitHub.html#getOrganization
+            let githubUserHandler = githubClient.getUser();
+
+            let getDB = function () {
+                // http://github-tools.github.io/github/docs/3.2.3/GitHub.html#getRepo
+                return githubClient.getRepo(githubUsername, databaseStorageRepoName);
+            }
+
+            let getData = function (table, id) {
                 let my_atob = atob;
-                return $.ajax({
-                    url: `${rootURL}/repos/${myself.organizationName}/${myself.databaseStorageRepoName}`
-                        + `/contents/db/${table}/${id}.json`,
-                    beforeSend: function (xhr) {
-                        xhr.setRequestHeader(
-                            "Authorization",
-                            "Basic " + btoa(`${myself.githubUsername}:${myself.authToken}`));
-                        xhr.setRequestHeader(
-                            'Accept', 'application/vnd.github.v3+json'
-                        );
-                    },
-                    type: 'GET',
-                })
+                return getDB().getContents(null, `db/${table}/${id}.json`, false)
                     .then(function (data) {
                         let content = my_atob(data.content);
                         let parsed = $.parseJSON(content);
@@ -48,15 +49,15 @@ define([
                     });
             };
 
-            myself.getTable = function (table) {
+            let getTable = function (table) {
                 let my_atob = atob;
                 return $.ajax({
-                    url: `${rootURL}/repos/${myself.organizationName}/${myself.databaseStorageRepoName}`
+                    url: `${rootURL}/repos/${organizationName}/${databaseStorageRepoName}`
                         + `/contents/db/${table}`,
                     beforeSend: function (xhr) {
                         xhr.setRequestHeader(
                             "Authorization",
-                            "Basic " + btoa(`${myself.githubUsername}:${myself.authToken}`));
+                            "Basic " + btoa(`${githubUsername}:${authToken}`));
                         xhr.setRequestHeader(
                             'Accept', 'application/vnd.github.v3+json'
                         );
@@ -77,8 +78,8 @@ define([
                     })
                     .catch(function (error) {
                         if (error.responseJSON.message == "Not Found") {
-                            return myself.createDatabase().then(function () {
-                                return myself.getTable(table);
+                            return createDatabase().then(function () {
+                                return getTable(table);
                             });
                         }
                         if (error.responseJSON.message == "This repository is empty.") {
@@ -91,56 +92,84 @@ define([
                     });
             }
 
-            myself.setData = function (table, id, value) {
-                let my_atob = atob;
-
-                return myself.getData(table, id).then(function (data) {
-                    if (_.isEqual(value, data.data)) {
-                        return Promise.resolve({
-                            data: value,
-                            sha: data.sha,
-                        });
-                    }
-
-                    let content = btoa(JSON.stringify(value));
-                    let dataToInsert = JSON.stringify({
-                        message: `Insert data in '${table}' for ID: '${id}'`,
-                        content: content,
-                        sha: data.sha
-                    });
-                    let headers = {};
-
-                    return $.ajax({
-                        url: `${rootURL}/repos/${myself.organizationName}/${myself.databaseStorageRepoName}`
-                            + `/contents/db/${table}/${id}.json`,
-                        beforeSend: function (xhr) {
-                            xhr.setRequestHeader(
-                                "Authorization",
-                                "Basic " + btoa(`${myself.githubUsername}:${myself.authToken}`));
-                            xhr.setRequestHeader(
-                                'Accept', 'application/vnd.github.v3+json'
-                            );
-                        },
-                        dataType: 'json',
-                        method: 'PUT',
-                        headers: headers,
-                        data: dataToInsert,
+            let setData = function (table, id, value) {
+                let path = `db/${table}/${id}.json`;
+                return getDB().getSha(null, path)
+                    .then(function (response) {
+                        let my_atob = atob;
+                        let output = response.data;
+                        output['data'] = $.parseJSON(my_atob(output.content));
+                        return output;
                     })
-                        .then(function (data) {
+                    .catch(function (error) {
+                        if (error.response.data.message == "Not Found") {
+                            return Promise.resolve({
+                                data: null,
+                                sha: null
+                            });
+                        }
+                        console.error(error);
+                    })
+                    .then(function (data) {
+                        if (_.isEqual(value, data.data)) {
                             return Promise.resolve({
                                 data: value,
-                                sha: data.content.sha
+                                sha: data.sha,
                             });
+                        }
+
+                        let content = btoa(JSON.stringify(value));
+                        let dataToInsert = JSON.stringify({
+                            message: `Insert data in '${table}' for ID: '${id}'`,
+                            content: content,
+                            sha: data.sha
                         });
-                });
+                        let headers = {};
+                        return $.ajax({
+                            url: `${rootURL}/repos/${organizationName}/${databaseStorageRepoName}`
+                                + `/contents/${path}`,
+                            beforeSend: function (xhr) {
+                                xhr.setRequestHeader(
+                                    "Authorization",
+                                    "Basic " + btoa(`${githubUsername}:${authToken}`));
+                                xhr.setRequestHeader(
+                                    'Accept', 'application/vnd.github.v3+json'
+                                );
+                            },
+                            dataType: 'json',
+                            method: 'PUT',
+                            headers: headers,
+                            data: dataToInsert,
+                        })
+                            .then(function (data) {
+                                return Promise.resolve({
+                                    data: value,
+                                    sha: data.content.sha
+                                });
+                            });
+                    })
+
+
+
+                return getDB().writeFile(null, `db/${table}/${id}.json`, value, `Insert data in '${table}' for ID: '${id}'`, {
+                    encode: true,
+                    author: null,
+                    committer: null
+                })
+                    .then(function (data) {
+                        return Promise.resolve({
+                            data: value,
+                            sha: data.content.sha
+                        });
+                    });
             };
 
-            myself.createDatabase = function () {
+            let createDatabase = function () {
                 // https://stackoverflow.com/a/13315588/3357831
                 // curl -i -H 'Authorization: token TOKENHERE' -d '{"name":":NAME"}' https://api.github.com/user/repos
                 let data = {
-                    name: `${myself.databaseStorageRepoName}`,
-                    description: `Database of ${myself.name} for https://daily-achievements.netlify.app/`,
+                    name: `${databaseStorageRepoName}`,
+                    description: `Database of ${name} for https://daily-achievements.netlify.app/`,
                     visibility: "private",
                     private: true,
                     homepage: 'https://daily-achievements.netlify.app/',
@@ -151,20 +180,9 @@ define([
                     auto_init: false,
                     delete_branch_on_merge: true
                 };
-                return $.ajax({
-                    url: `${rootURL}/user/repos`,
-                    beforeSend: function (xhr) {
-                        xhr.setRequestHeader(
-                            "Authorization",
-                            "Basic " + btoa(`${myself.githubUsername}:${myself.authToken}`));
-                        xhr.setRequestHeader(
-                            'Accept', 'application/vnd.github.v3+json'
-                        );
-                    },
-                    dataType: 'json',
-                    method: 'POST',
-                    data: JSON.stringify(data),
-                })
+
+                // http://github-tools.github.io/github/docs/3.2.3/Organization.html#createRepo
+                return githubUserHandler.createRepo(data)
                     .then(function (data) {
                         return Promise.resolve({
                             success: true,
@@ -173,7 +191,7 @@ define([
                     })
                     .catch(function (error) {
                         try {
-                            if (error.responseJSON.errors[0].message == "name already exists on this account") {
+                            if (error.response.data.errors[0].message == "name already exists on this account") {
                                 return Promise.resolve({
                                     success: true
                                 })
@@ -186,6 +204,11 @@ define([
                     });
             };
 
-            return myself;
+            return {
+                createDatabase: createDatabase,
+                getTable: getTable,
+                getData: getData,
+                setData: setData,
+            };
         };
     });

@@ -15,7 +15,9 @@ define([
     function (controller, db, user, tag, item, note, date, uiEngine, $, _, itemForm, tagForm) {
         let tagFormF = $(tagForm);
         tag.initForm(tagFormF, true, function (allTags) {
-            initSelect($('.item-tag-select'), allTags.data)
+            tagFormF.add('body').find('.item-tag-select').each(function (i, sel) {
+                initSelect($(sel), allTags.data);
+            })
         });
 
         let resetError = function ($form) {
@@ -51,6 +53,10 @@ define([
         };
 
         let initSelect = function (tagSelect, allTags) {
+            if (tagSelect.length == 0) {
+                return;
+            }
+            let currentValue = tagSelect.val();
             tagSelect.parent('.styled-select').find('.select-ui-extra').remove();
 
             tagSelect.find('option').remove();
@@ -59,14 +65,7 @@ define([
                 tagSelect.append(`<option value="${tag.name}">${tag.name}</option>`);
             });
             tagSelect.append('<option value="add-new-tag">Add new tag</option>');
-
-            tagSelect.change(function () {
-                // need to catch add tag pop up
-                let value = $(this).val();
-                if (value == 'add-new-tag') {
-                    $('body').append(tagFormF);
-                }
-            });
+            tagSelect.val(currentValue);
 
             uiEngine.run();
         }
@@ -83,6 +82,18 @@ define([
                 // Tag selector
                 let tagSelect = itemF.find('.item-tag-select');
                 initSelect(tagSelect, allTags);
+
+                let contentField = itemF.find('.item-content-input');
+                tagSelect.change(function () {
+                    // need to catch add tag pop up
+                    let value = $(this).val();
+                    if (value == 'add-new-tag') {
+                        tag.openForm(tagFormF);
+                        contentField.attr('placeholder', `What have you accomplished?`);
+                    } else {
+                        contentField.attr('placeholder', `Worked on ${value}`);
+                    }
+                });
 
                 // Delete button
                 itemF.find('.delete-item-btn').click(function () {

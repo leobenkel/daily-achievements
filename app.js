@@ -15,12 +15,10 @@ requirejs.config({
         json: [
             // https://github.com/millermedeiros/requirejs-plugins
             '/scripts/lib/json'
+        ],
+        github: [
+            'https://unpkg.com/github-api/dist/GitHub.bundle.min'
         ]
-    },
-    shim: {
-        scastie: {
-            exports: 'scastie'
-        }
     }
 });
 
