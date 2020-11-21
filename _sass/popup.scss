@@ -9,7 +9,7 @@
     transform: translate(-50%, -50%);
 
     background-color: $background-color;
-    z-index: 9999;
+    z-index: $index_on_top;
     border-radius: 8px;
     border: 1px black solid;
 

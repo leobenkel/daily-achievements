@@ -164,7 +164,7 @@
     .styled-select {
         position: relative;
         padding-top: 36px;
-        z-index: 80;
+        z-index: $index_on_bottom;
 
         label {
             top: -6px;
@@ -211,7 +211,7 @@
             background-color: $background-color;
             top: 70px;
             left: 30px;
-            z-index: 99;
+            z-index: $index_middle_top;
             border: black 1px solid;
             width: calc(100% - 60px);
         }

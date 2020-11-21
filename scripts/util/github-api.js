@@ -93,6 +93,64 @@ define([
             }
 
             let setData = function (table, id, value) {
+                let path = `db/${table}/${id}.json`;
+                return getDB().getSha(null, path)
+                    .then(function (response) {
+                        let my_atob = atob;
+                        let output = response.data;
+                        output['data'] = $.parseJSON(my_atob(output.content));
+                        return output;
+                    })
+                    .catch(function (error) {
+                        if (error.response.data.message == "Not Found") {
+                            return Promise.resolve({
+                                data: null,
+                                sha: null
+                            });
+                        }
+                        console.error(error);
+                    })
+                    .then(function (data) {
+                        if (_.isEqual(value, data.data)) {
+                            return Promise.resolve({
+                                data: value,
+                                sha: data.sha,
+                            });
+                        }
+
+                        let content = btoa(JSON.stringify(value));
+                        let dataToInsert = JSON.stringify({
+                            message: `Insert data in '${table}' for ID: '${id}'`,
+                            content: content,
+                            sha: data.sha
+                        });
+                        let headers = {};
+                        return $.ajax({
+                            url: `${rootURL}/repos/${organizationName}/${databaseStorageRepoName}`
+                                + `/contents/${path}`,
+                            beforeSend: function (xhr) {
+                                xhr.setRequestHeader(
+                                    "Authorization",
+                                    "Basic " + btoa(`${githubUsername}:${authToken}`));
+                                xhr.setRequestHeader(
+                                    'Accept', 'application/vnd.github.v3+json'
+                                );
+                            },
+                            dataType: 'json',
+                            method: 'PUT',
+                            headers: headers,
+                            data: dataToInsert,
+                        })
+                            .then(function (data) {
+                                return Promise.resolve({
+                                    data: value,
+                                    sha: data.content.sha
+                                });
+                            });
+                    })
+
+
+
                 return getDB().writeFile(null, `db/${table}/${id}.json`, value, `Insert data in '${table}' for ID: '${id}'`, {
                     encode: true,
                     author: null,

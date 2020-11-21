@@ -13,3 +13,4 @@
 * item form: blocks are too big
 * Hide jquery error in console
 * Replace my custom github library with http://github-tools.github.io/github/docs/3.2.3/index.html
+* Search box for tag dropdown
