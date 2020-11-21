@@ -1,14 +1,18 @@
 define([
-    'scripts/util/local-storage.js',
-    'scripts/data/database.js'
+    'scripts/core/navigator.js',
+    'scripts/util/local-storage.js'
 ],
-    function (storage, db) {
+    function (navigator, storage) {
         let isConnected = function () {
             return !!getUser();
         };
 
         let getUser = function () {
             let user = JSON.parse(storage.get('users'));
+            if (!user) {
+                navigator.set('login');
+                return;
+            }
             return user;
         }
 

@@ -21,7 +21,20 @@ define([
             return db.loadAll(tableName);
         }
 
+        let getColorHex = function () {
+            // https://css-tricks.com/snippets/javascript/random-hex-color/
+            let randomColor = Math.floor(Math.random() * 16777215).toString(16).toUpperCase();
+            return "#" + randomColor;
+        }
+
+        let openForm = function (form) {
+            form.find('input[name="color"]').val(getColorHex());
+            $('body').append(form);
+            form.find('input[name="name"]').focus();
+        }
+
         let initForm = function (form, isPopup, cb) {
+
             let closeForm = function () {
                 form.detach();
                 form.find('input').val("");
@@ -88,6 +101,7 @@ define([
             save: save,
             fetchOne: fetchOne,
             fetchAll: fetchAll,
-            initForm: initForm
+            initForm: initForm,
+            openForm: openForm
         };
     });

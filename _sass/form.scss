@@ -122,6 +122,20 @@
         margin: 20px auto 25px auto;
     }
 
+    .input-row {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+
+        .styled-input {
+            flex: 1;
+            min-width: 300px;
+            margin-left: 8px;
+            margin-right: 8px;
+        }
+    }
+
     .submit-wrapper {
         /* OLD - iOS 6-, Safari 3.1-6, BB7 */
         display: -webkit-box;

@@ -50,7 +50,7 @@ define([
             return note_id;
         };
 
-        let initSelect = function (tagSelect, allTags) {
+        let initSelect = function (form, tagSelect, allTags) {
             tagSelect.parent('.styled-select').find('.select-ui-extra').remove();
 
             tagSelect.find('option').remove();
@@ -60,11 +60,16 @@ define([
             });
             tagSelect.append('<option value="add-new-tag">Add new tag</option>');
 
+            let contentField = form.find('.item-content-input');
+
             tagSelect.change(function () {
                 // need to catch add tag pop up
                 let value = $(this).val();
                 if (value == 'add-new-tag') {
-                    $('body').append(tagFormF);
+                    tag.openForm(tagFormF);
+                    contentField.attr('placeholder', `What have you accomplished?`);
+                } else {
+                    contentField.attr('placeholder', `Worked on ${value}`);
                 }
             });
 
@@ -82,7 +87,7 @@ define([
 
                 // Tag selector
                 let tagSelect = itemF.find('.item-tag-select');
-                initSelect(tagSelect, allTags);
+                initSelect(itemF, tagSelect, allTags);
 
                 // Delete button
                 itemF.find('.delete-item-btn').click(function () {
