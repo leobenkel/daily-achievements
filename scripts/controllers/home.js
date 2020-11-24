@@ -19,7 +19,7 @@ define([
         let renderItems = function (items) {
             let itemsContent = items.map(function (item) {
                 return renderItem(item);
-            });
+            }).join('');
             return `
             <div class="items-container">
                 ${itemsContent}
@@ -51,7 +51,7 @@ define([
                                         allTags.forEach(function (tag) {
                                             tagMap[tag.data.name] = tag;
                                         });
-                                        console.log(tagMap);
+                                        // console.log(tagMap);
 
                                         allNotes = allNotes.map(function (n) {
                                             n.data['items'] = n.data.items.map(function (item) {
@@ -60,7 +60,7 @@ define([
                                             });
                                             return n;
                                         });
-                                        console.log(allNotes);
+                                        // console.log(allNotes);
 
                                         return Promise.resolve(allNotes);
                                     })
