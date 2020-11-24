@@ -47,14 +47,23 @@ define([
             return "#" + randomColor;
         }
 
+        let initColor = function (form) {
+            let color = getColorHex()
+            form.find('input[name="color"]').val(color);
+            colorizeSample(form, color);
+        }
+
         let openForm = function (form) {
-            form.find('input[name="color"]').val(getColorHex());
+            initColor(form);
             $('body').append(form);
             form.find('input[name="name"]').focus();
         }
 
-        let initForm = function (form, isPopup, cb) {
+        let colorizeSample = function (form, color) {
+            form.find('.tag-color-sample').css('background-color', color);
+        }
 
+        let initForm = function (form, isPopup, cb) {
             let closeForm = function () {
                 form.detach();
                 form.find('input').val("");
@@ -77,6 +86,29 @@ define([
                 $error.removeClass('empty');
             }
 
+            let isValidColor = function (color) {
+                return /^#([0-9A-F]{3}){1,2}$/i.test(color);
+            }
+
+            let handleColor = function () {
+                let colorInput = form.find('input[name="color"]');
+
+                let colorUpdate = _.debounce(function () {
+                    let color = $(this).val();
+                    if (isValidColor(color)) {
+                        colorizeSample(form, color)
+                    }
+                }, 200);
+
+                colorInput.keydown(colorUpdate);
+                colorInput.keyup(colorUpdate);
+                colorInput.keypress(colorUpdate);
+
+                form.find('.tag-color-sample').click(function () {
+                    initColor(form);
+                });
+            }
+
             let handleSubmit = function ($form) {
                 $form.submit(function (e) {
                     e.preventDefault();
@@ -94,7 +126,7 @@ define([
 
                     // check validity
                     let color = toSave['color'];
-                    let validColor = /^#([0-9A-F]{3}){1,2}$/i.test(color);
+                    let validColor = isValidColor(color);
                     if (!validColor) {
                         displayError('Color is invalid. Format needs to be #00ff00');
                         return false;
@@ -114,6 +146,7 @@ define([
             }
 
             handleSubmit(form);
+            handleColor(form);
             return Promise.resolve();
         }
 
