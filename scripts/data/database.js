@@ -30,10 +30,16 @@ define([
             return ghClient.createDatabase();
         }
 
+        let getDatabaseLink = function () {
+            let ghClient = getGHClient();
+            return ghClient.getDatabaseLink();
+        }
+
         return {
             save: save,
             load: load,
             loadAll: loadAll,
-            init: init
+            init: init,
+            getDatabaseLink: getDatabaseLink
         };
     });

@@ -1,9 +1,7 @@
 define([
     '/scripts/core/controller.js',
-    '/scripts/data/database.js',
-    '/scripts/data/user.js',
+    '/scripts/core/navigator.js',
     '/scripts/data/tag.js',
-    '/scripts/data/item.js',
     '/scripts/data/note.js',
     '/scripts/util/date.js',
     '/scripts/ui/engine.js',
@@ -12,7 +10,7 @@ define([
     `text!/scripts/templates/item_form.html`,
     `text!/scripts/templates/tag_form.html`,
 ],
-    function (controller, db, user, tag, item, note, date, uiEngine, $, _, itemForm, tagForm) {
+    function (controller, navigator, tag, note, date, uiEngine, $, _, itemForm, tagForm) {
         let tagFormF = $(tagForm);
         tag.initForm(tagFormF, true, function (allTags) {
             tagFormF.add('body').find('.item-tag-select').each(function (i, sel) {
@@ -40,16 +38,8 @@ define([
         }
 
         let setupInputHidden = function (form) {
-            let authorName = user.get()['name'];
-            form.find('input[name="author_id"]').val(authorName);
-
             let today = date.today();
             form.find('input[name="date"]').val(today);
-
-            let note_id = `${authorName}-${today}`
-            form.find('input[name="note_id"]').val(note_id);
-
-            return note_id;
         };
 
         let initSelect = function (tagSelect, allTags) {
@@ -70,7 +60,7 @@ define([
             uiEngine.run();
         }
 
-        let setupItemContainer = function (form, allTags, note_id) {
+        let setupItemContainer = function (form, allTags) {
             let addBtn = form.find('#add-item');
             let itemContainer = form.find('#item-container');
 
@@ -139,33 +129,22 @@ define([
                 // extract items to save
                 let itemsToSave = toSave.item
                     .map(function (itm, i) {
-                        itm['note_id'] = toSave['note_id'];
-                        itm['item_id'] = `${toSave['note_id']}-${i}`;
+                        if (itm['content'] == '') {
+                            delete itm['content'];
+                        }
                         return itm;
                     });
 
-                // save items and note
-                itemsToSave
-                    .map(function (itm) {
-                        return function () { return item.save(itm); }
-                    })
-                    .reduce(function (prev, cur) {
-                        return prev.then(cur);
-                    }, Promise.resolve())
-                    .then(function (items) {
-                        let noteData = {
-                            author_id: toSave['author_id'],
-                            note_id: toSave['note_id'],
-                            date: toSave['date'],
-                            item_ids: itemsToSave.map(function (itm) {
-                                return itm.item_id;
-                            })
-                        };
-                        return note.save(noteData);
-                    })
+                let noteData = {
+                    author_id: toSave['author_id'],
+                    note_id: toSave['date'],
+                    date: toSave['date'],
+                    items: itemsToSave
+                };
+                note.save(noteData)
                     .then(function () {
-                        // redirect is needed here !
-                    })
+                        navigator.set('');
+                    });
 
                 return false;
             });
@@ -175,11 +154,11 @@ define([
             render: function () {
                 return controller.make("new-note", "New Note", function () {
                     let form = $('#new-note-form');
-                    let note_id = setupInputHidden(form);
+                    setupInputHidden(form);
                     handleSubmit(form);
 
                     return getAllTags().then(function (allTags) {
-                        setupItemContainer(form, allTags, note_id);
+                        setupItemContainer(form, allTags);
                         form.find('button[type="submit"]').prop('disabled', false);
                     });
                 }).render();

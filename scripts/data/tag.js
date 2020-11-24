@@ -21,6 +21,26 @@ define([
             return db.loadAll(tableName);
         }
 
+        let fetchAllComplete = function () {
+            return fetchAll().then(function (tags) {
+                // TODO: only fetch recent onces.
+                let allTags = [];
+                return tags.data.map(function (n) {
+                    return function () { return fetchOne(n.name); }
+                })
+                    .reduce(function (prev, cur) {
+                        return prev.then(cur)
+                            .then(function (r) {
+                                allTags.push(r);
+                                return Promise.resolve();
+                            });
+                    }, Promise.resolve())
+                    .then(function () {
+                        return Promise.resolve(allTags);
+                    });
+            });
+        }
+
         let getColorHex = function () {
             // https://css-tricks.com/snippets/javascript/random-hex-color/
             let randomColor = Math.floor(Math.random() * 16777215).toString(16).toUpperCase();
@@ -101,6 +121,7 @@ define([
             save: save,
             fetchOne: fetchOne,
             fetchAll: fetchAll,
+            fetchAllComplete: fetchAllComplete,
             initForm: initForm,
             openForm: openForm
         };

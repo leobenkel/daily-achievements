@@ -1,12 +1,12 @@
 define([
     '/scripts/core/controller.js',
-    '/scripts/util/local-storage.js',
     '/scripts/core/navigator.js',
+    '/scripts/data/database.js',
     '/scripts/data/user.js',
     'jquery',
     'lodash'
 ],
-    function (controller, storage, navigator, user, $, _) {
+    function (controller, navigator, db, user, $, _) {
         let resetError = function ($form) {
             let $error = $form.find('.error');
             $error.addClass('empty');
@@ -17,6 +17,15 @@ define([
             let $error = $form.find('.error');
             $error.text(message);
             $error.removeClass('empty');
+        }
+
+        let renderDatabaseLink = function () {
+            let database_link = db.getDatabaseLink();
+            console.log(database_link);
+            if (database_link) {
+                $('.database-link').attr('href', database_link);
+                $('.database-link').prop('disabled', false);
+            }
         }
 
         let init = function ($form) {
@@ -56,6 +65,7 @@ define([
                     let $form = $("#login-form");
                     init($form);
                     handleSubmit($form);
+                    renderDatabaseLink();
                     return Promise.resolve();
                 }).render();
             }
