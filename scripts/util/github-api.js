@@ -26,6 +26,28 @@ define([
                 return githubClient.getRepo(githubUsername, databaseStorageRepoName);
             }
 
+
+
+            let manageErrors = function (error, defaultValue) {
+                let repoIsCreatedButEmpty = function () {
+                    return error.response.statusText == "Not Found" && error.response.data.message == "This repository is empty."
+                }
+
+                let failedToCreateRepo = function () {
+                    return error.response.data.message == "Repository creation failed." && error.response.data.errors[0].message == "name already exists on this account";
+                }
+
+                let rowNotFound = function () {
+                    return error.response.statusText == "Not Found" && error.response.data.message == "Not Found";
+                }
+
+                if (failedToCreateRepo() || repoIsCreatedButEmpty() || rowNotFound()) {
+                    return Promise.resolve(defaultValue);
+                }
+                console.error(`Failed to handled:`, error);
+                return Promise.reject(error);
+            }
+
             let getData = function (table, id) {
                 let my_atob = atob;
                 return getDB().getContents(null, `db/${table}/${id}.json`, false)
@@ -39,14 +61,10 @@ define([
                         });
                     })
                     .catch(function (error) {
-                        if (error.statusText === 'Not Found') {
-                            return Promise.resolve({
-                                data: null,
-                                sha: null,
-                            });
-                        }
-
-                        return Promise.reject(error);
+                        return manageErrors(error, {
+                            data: null,
+                            sha: null,
+                        });
                     });
             };
 
@@ -65,18 +83,9 @@ define([
                         return Promise.resolve({ data: validData });
                     })
                     .catch(function (error) {
-                        if (error.responseJSON.message == "Not Found") {
-                            return createDatabase().then(function () {
-                                return getTable(table);
-                            });
-                        }
-                        if (error.responseJSON.message == "This repository is empty.") {
-                            return Promise.resolve({
-                                data: []
-                            });
-                        }
-
-                        return Promise.reject(error);
+                        return manageErrors(error, {
+                            data: []
+                        });
                     });
             }
 
@@ -90,13 +99,10 @@ define([
                         return output;
                     })
                     .catch(function (error) {
-                        if (error.response.data.message == "Not Found") {
-                            return Promise.resolve({
-                                data: null,
-                                sha: null
-                            });
-                        }
-                        console.error(error);
+                        return manageErrors(error, {
+                            data: null,
+                            sha: null,
+                        });
                     })
                     .then(function (data) {
                         if (_.isEqual(value, data.data)) {
@@ -134,22 +140,25 @@ define([
                                     data: value,
                                     sha: data.content.sha
                                 });
+                            })
+                            .catch(function (error) {
+                                return manageErrors(error, {
+                                    data: null,
+                                    sha: null,
+                                });
                             });
-                    })
-
-
-
-                return getDB().writeFile(null, `db/${table}/${id}.json`, value, `Insert data in '${table}' for ID: '${id}'`, {
-                    encode: true,
-                    author: null,
-                    committer: null
-                })
-                    .then(function (data) {
-                        return Promise.resolve({
-                            data: value,
-                            sha: data.content.sha
-                        });
                     });
+                // return getDB().writeFile(null, `db/${table}/${id}.json`, value, `Insert data in '${table}' for ID: '${id}'`, {
+                //     encode: true,
+                //     author: null,
+                //     committer: null
+                // })
+                //     .then(function (data) {
+                //         return Promise.resolve({
+                //             data: value,
+                //             sha: data.content.sha
+                //         });
+                //     });
             };
 
             let createDatabase = function () {
@@ -178,22 +187,20 @@ define([
                         });
                     })
                     .catch(function (error) {
-                        try {
-                            if (error.response.data.errors[0].message == "name already exists on this account") {
-                                return Promise.resolve({
-                                    success: true
-                                })
-                            }
-                        } catch {
-
-                        }
-
-                        return Promise.reject(error);
+                        return manageErrors(error, {
+                            success: true,
+                            data: null
+                        });
                     });
+            };
+
+            let getDatabaseLink = function () {
+                return `https://github.com/${organizationName}/${databaseStorageRepoName}`;
             };
 
             return {
                 createDatabase: createDatabase,
+                getDatabaseLink: getDatabaseLink,
                 getTable: getTable,
                 getData: getData,
                 setData: setData,

@@ -6,7 +6,7 @@ define([
             * note_id (PK)
             * author_id (indexed)(required)
             * date (indexed)(required)
-            * item_ids (required, need at east one to save)
+            * items (required, need at east one to save): [{content, tag}, {}]
         */
 
         let tableName = "Notes"
@@ -23,9 +23,30 @@ define([
             return db.loadAll(tableName);
         }
 
+        let fetchAllComplete = function () {
+            return fetchAll().then(function (notes) {
+                // TODO: only fetch recent onces.
+                let allNotes = [];
+                return notes.data.map(function (n) {
+                    return function () { return fetchOne(n.name); }
+                })
+                    .reduce(function (prev, cur) {
+                        return prev.then(cur)
+                            .then(function (r) {
+                                allNotes.push(r);
+                                return Promise.resolve();
+                            });
+                    }, Promise.resolve())
+                    .then(function () {
+                        return Promise.resolve(allNotes);
+                    });
+            });
+        }
+
         return {
             save: save,
             fetchOne: fetchOne,
-            fetchAll: fetchAll
+            fetchAll: fetchAll,
+            fetchAllComplete: fetchAllComplete
         };
     });
