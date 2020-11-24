@@ -29,7 +29,8 @@ define([
             let getData = function (table, id) {
                 let my_atob = atob;
                 return getDB().getContents(null, `db/${table}/${id}.json`, false)
-                    .then(function (data) {
+                    .then(function (response) {
+                        let data = response.data;
                         let content = my_atob(data.content);
                         let parsed = $.parseJSON(content);
                         return Promise.resolve({
@@ -50,25 +51,12 @@ define([
             };
 
             let getTable = function (table) {
-                let my_atob = atob;
-                return $.ajax({
-                    url: `${rootURL}/repos/${organizationName}/${databaseStorageRepoName}`
-                        + `/contents/db/${table}`,
-                    beforeSend: function (xhr) {
-                        xhr.setRequestHeader(
-                            "Authorization",
-                            "Basic " + btoa(`${githubUsername}:${authToken}`));
-                        xhr.setRequestHeader(
-                            'Accept', 'application/vnd.github.v3+json'
-                        );
-                    },
-                    type: 'GET',
-                })
-                    // Promise.resolve(JSON.parse('[{"name":"undefined.json","path":"db/Tags/undefined.json","sha":"08f4cc03d2b7a940bc6b345bec98f0e9c4d6a527","size":32,"url":"https://api.github.com/repos/leobenkel-db/daily-achievements-Leo/contents/db/Tags/undefined.json?ref=main","html_url":"https://github.com/leobenkel-db/daily-achievements-Leo/blob/main/db/Tags/undefined.json","git_url":"https://api.github.com/repos/leobenkel-db/daily-achievements-Leo/git/blobs/08f4cc03d2b7a940bc6b345bec98f0e9c4d6a527","download_url":"https://raw.githubusercontent.com/leobenkel-db/daily-achievements-Leo/main/db/Tags/undefined.json?token=ARZG3RJPTGKHAZKWA3DIK327WU5CC","type":"file","_links":{"self":"https://api.github.com/repos/leobenkel-db/daily-achievements-Leo/contents/db/Tags/undefined.json?ref=main","git":"https://api.github.com/repos/leobenkel-db/daily-achievements-Leo/git/blobs/08f4cc03d2b7a940bc6b345bec98f0e9c4d6a527","html":"https://github.com/leobenkel-db/daily-achievements-Leo/blob/main/db/Tags/undefined.json"}}]'))
-                    .then(function (data) {
-                        let validData = data.map(function (e) {
+                return getDB().getContents(null, `db/${table}`, false)
+                    .then(function (response) {
+                        let validData = response.data.map(function (e) {
                             return {
                                 name: e.name.replaceAll('.json', ''),
+                                fileName: e.name,
                                 path: e.path,
                                 sha: e.sha,
                                 url: e.url,
