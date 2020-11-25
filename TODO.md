@@ -16,3 +16,4 @@
 * Search box for tag dropdown
 * home page - need a refresh button to clean cache
 * home page - after clicking on a date - need a button to update this date
+* Home page - fix the date misalignment around midnight. wrong thing is being selected
