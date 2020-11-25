@@ -3,10 +3,10 @@ requirejs.config({
     baseUrl: '/',
     paths: {
         jquery: [
-            'https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min',
+            '//ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min',
         ],
         lodash: [
-            'https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.20/lodash.min'
+            '//cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.20/lodash.min'
         ],
         text: [
             // https://github.com/requirejs/text
@@ -18,8 +18,13 @@ requirejs.config({
         ],
         github: [
             'https://unpkg.com/github-api/dist/GitHub.bundle.min'
+        ],
+        calendarLib: [
+            // https://github.com/mauroreisvieira/hello-week
+            // '//cdn.jsdelivr.net/npm/hello-week@3.0.4-beta/dist/hello.week'
+            '/scripts/lib/hello.week.3.0.4'
         ]
-    }
+    },
 });
 
 define(['/scripts/util/find-get-param.js'], function (findGetParameter, preConfig) {

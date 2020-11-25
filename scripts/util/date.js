@@ -41,10 +41,20 @@ define([], function () {
         return date;
     };
 
-
-
     let today = function () {
-        return new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        return reduceDate(todayDashSeparated());
+    }
+
+    let reduceDate = function (date) {
+        return date.replace(/-/g, '');
+    }
+
+    let todayDashSeparated = function () {
+        return new Date().toISOString().slice(0, 10)
+    }
+
+    let dateToCompact = function (year, month, day) {
+        return reduceDate(new Date(year, month - 1, parseInt(day) + 1).toISOString().slice(0, 10));
     }
 
     let display = function (date) {
@@ -55,7 +65,10 @@ define([], function () {
 
     return {
         today: today,
+        todayDashSeparated,
         convertDate: convertDate,
+        reduceDate: reduceDate,
+        dateToCompact: dateToCompact,
         display: display
     };
 });
