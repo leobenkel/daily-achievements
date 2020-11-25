@@ -10,61 +10,26 @@ define([
     'calendarLib'
 ],
     function (controller, db, note, tag, date, cache, $, _, calendarLib) {
-        let el = calendarLib.el
-
         let makeCalendar = function (data) {
-            let setupMonth = function (calendar) {
-                return;
-                let cal = $(calendar.selector);
-                // console.log(cal);
-                let days = cal.find('div.day');
-                // console.log(days);
-                days.each(function (i, d) {
-                    let $d = $(d);
-                    let day = $d.html();
-                    // console.log(day);
-                    let dateCurrent = date.dateToCompact(
-                        calendar.getYear(),
-                        calendar.getMonth(),
-                        day
-                    );
-                    // console.log(dateCurrent);
-                    let findDataForDate = _.find(data, function (d) {
-                        return d.data.date == dateCurrent;
-                    });
-                    // console.log(findDataForDate);
-                    if (findDataForDate) {
-                        let items = findDataForDate.data.items;
-                        let container = $(`<div class="activities-container"></div>`)
-                        items.forEach(function (item) {
-                            let color = item.tag.data.color;
-                            console.log(color, item);
-                            container.append(`<div class="activity" style="background-color:${color}"></div>`)
-                        });
-                        $d.html('');
-                        $d.append(container);
-                        $d.append(`<div class="day-number"><div class="number-background">${day}</div></div>`);
-                        $d.addClass('day-with-activities');
-                        calendar.setDaysHighlight(['2020-11-24']);
-                    }
-                });
-            }
+            let el = calendarLib.el
 
             let reactOnSelect = function (calendar) {
-                let dateSelected = date.reduceDate(calendar.daysSelected[0]);
+                if (calendar.daysSelected.length > 0) {
+                    let dateSelected = date.reduceDate(calendar.daysSelected[0]);
 
-                let findDataForDate = _.find(data, function (d) {
-                    return d.data.date == dateSelected;
-                });
+                    let findDataForDate = _.find(data, function (d) {
+                        return d.data.date == dateSelected;
+                    });
 
-                if (findDataForDate) {
-                    renderEvents([findDataForDate]);
+                    if (findDataForDate) {
+                        renderEvents([findDataForDate]);
+                    } else {
+                        renderEvents([]);
+                    }
                 } else {
-                    renderEvents(data);
+                    renderEvents([]);
                 }
             }
-
-            console.log('start calendar');
 
             // https://github.com/mauroreisvieira/hello-week
             let calendar = new calendarLib.HelloWeek({
@@ -97,24 +62,20 @@ define([
                         reactOnSelect(calendar);
                     });
 
-                    setupMonth(calendar);
                     reactOnSelect(calendar);
                 },
                 onNavigation: function () {
-                    setupMonth(calendar);
+                    calendar.daysSelected = [];
+                    reactOnSelect(calendar);
                 },
                 onSelect: function () {
                     reactOnSelect(calendar);
                 },
                 beforeCreateDay: function (input) {
-                    console.log(input);
-
                     let dateCurrent = date.reduceDate(input.date);
                     let findDataForDate = _.find(data, function (d) {
                         return d.data.date == dateCurrent;
                     });
-
-                    console.log(findDataForDate);
                     if (findDataForDate) {
                         let day = input.day;
                         let items = findDataForDate.data.items;
