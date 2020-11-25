@@ -77,6 +77,17 @@ ul.p-block li a {
     font-weight: bolder;
 }
 
+button {
+    -webkit-user-select: none;
+    /* Safari */
+    -moz-user-select: none;
+    /* Firefox */
+    -ms-user-select: none;
+    /* IE10+/Edge */
+    user-select: none;
+    /* Standard */
+}
+
 div p:last-child {
     margin-bottom: 0;
 }
@@ -88,4 +99,9 @@ div p:last-child {
 
 .hidden {
     display: none !important;
+}
+
+a.is-disabled {
+    cursor: not-allowed !important;
+    pointer-events: none;
 }

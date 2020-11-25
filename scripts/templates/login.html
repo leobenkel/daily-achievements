@@ -18,29 +18,32 @@
                 <label>Token</label>
             </div>
 
-            <div>
-                <ul>
-                    <li>
-                        <p>https://github.com/</p>
-                    </li>
-                    <li>
-                        <p>https://github.com/settings/tokens</p>
-                    </li>
-                    <li>
-                        <p>7ba96e843d95cbb27b887598aa95dfe47293a158</p>
-                    </li>
-                </ul>
+            <div class="login-help">
+                <p>This application use a github repo as a database.</p>
+                <p>This is a client side only app, hosted by Netlify. There are no servers at all.</p>
+                <p>Feel free to look at the network tab in the chrome dev console. Nothing is travelling anywhere. You
+                    own your data. You can even clone the repo created and modify the database yourself if you'd like.
+                </p>
+                <p>To connect, choose a 'name', that will be used to create a database for you, which allow you to have
+                    several account under the same Github credentials.</p>
+                <p>Then, go to the github setting page: <a href="https://github.com/settings/tokens"
+                        target="_blank">https://github.com/settings/tokens</a> and create a personal token. You can
+                    destroy when you don't want to use it anymore. And make sure to only select 'repository' permission
+                    so you are safe.</p>
+                <p>If you are scared, I personally created a brand new Github account with nothing in it but the
+                    database.</p>
+                <p>You can then paste you Github username and Github token in the form and press 'connect'.</p>
             </div>
 
             <div class="submit-wrapper">
-                <button type="submit" class="btn btn-lrg submit-btn cta-button "
+                <button type="submit" class="btn btn-lrg submit-btn cta-button"
                     data-callback='onSubmit'>Connect</button>
             </div>
 
             <div class="error empty">&nbsp;</div>
         </div>
     </form>
-    <div>
-        <a class="database-link" href="" target="_blank" disabled>Open database</a>
+    <div class="database-link-container">
+        <a class="database-link btn btn-lrg cta-button is-disabled" href="" target="_blank">Open database</a>
     </div>
 </div>

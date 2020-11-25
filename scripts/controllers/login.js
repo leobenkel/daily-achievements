@@ -24,7 +24,7 @@ define([
             console.log(database_link);
             if (database_link) {
                 $('.database-link').attr('href', database_link);
-                $('.database-link').prop('disabled', false);
+                $('.database-link').removeClass('is-disabled');
             }
         }
 

@@ -1,0 +1,25 @@
+@import "vars";
+
+.login-help {
+    margin-bottom: 16px;
+}
+.database-link-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-content: center;
+
+    .database-link {
+    }
+}
+
+#login-form {
+    .input-container {
+        margin-bottom: 0;
+    }
+    .error {
+        margin-top: 8px;
+        margin-bottom: 8px;
+    }
+}
