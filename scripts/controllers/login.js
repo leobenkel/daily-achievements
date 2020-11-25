@@ -21,7 +21,7 @@ define([
 
         let renderDatabaseLink = function () {
             let database_link = db.getDatabaseLink();
-            console.log(database_link);
+            // console.log(database_link);
             if (database_link) {
                 $('.database-link').attr('href', database_link);
                 $('.database-link').removeClass('is-disabled');
