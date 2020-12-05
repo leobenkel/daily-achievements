@@ -23,6 +23,9 @@ define([
                         return date.parse(d.data.date).compactFormat == date.parse(dateSelected).compactFormat;
                     });
 
+                    storage.set('edit-date', dateSelected.compactFormat);
+                    calendar.goToDate(dateSelected.dashedFormat);
+
                     if (findDataForDate) {
                         renderEvents([findDataForDate]);
                     } else {
@@ -160,16 +163,15 @@ define([
                 let noteBlock = $(`<div class="note">
                 <div class="note-header">
                     <div class="date">${date.parse(note.data.date).humanFormat}</div>
+                    <button class="update-note" type="button"><span class="material-icons">create</span></button>
                 </div>
                 ${renderItems(note.data.items)}
                 </div> `);
 
                 if (single) {
                     console.log('set-click', note.data.date);
-                    let updateLink = $('.calendar-action-edit-date');
-                    updateLink.text(`Edit ${date.parse(note.data.date).dashedFormat}`);
-                    updateLink.off("click");
-                    updateLink.click(function (e) {
+
+                    let clickEdit = function (e) {
                         e.preventDefault();
                         console.log('set-click-event', note.data.date);
 
@@ -177,7 +179,16 @@ define([
                         navigator.set('newNote');
 
                         return false;
-                    });
+                    };
+
+                    let updateLink = $('.calendar-action-edit-date');
+                    updateLink.text(`Edit ${date.parse(note.data.date).dashedFormat}`);
+                    updateLink.off("click");
+                    updateLink.click(clickEdit);
+
+                    let updateShortBtn = noteBlock.find('.update-note');
+                    updateShortBtn.off("click");
+                    updateShortBtn.click(clickEdit);
                 }
                 return noteBlock;
             }

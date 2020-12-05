@@ -41,6 +41,10 @@ define([], function () {
     let parse = function (date) {
         // console.log('parseCompact', date);
 
+        if (!date) {
+            return;
+        }
+
         if ($.isPlainObject(date)) {
             return date;
         }
