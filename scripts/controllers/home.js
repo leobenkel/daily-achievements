@@ -6,12 +6,13 @@ define([
     '/scripts/data/tag.js',
     '/scripts/util/date.js',
     '/scripts/util/cache.js',
+    '/scripts/data/fetch-all.js',
     '/scripts/util/local-storage.js',
     'jquery',
     'lodash',
     'calendarLib'
 ],
-    function (controller, navigator, db, note, tag, date, cache, storage, $, _, calendarLib) {
+    function (controller, navigator, db, note, tag, date, cache, fetchAll, storage, $, _, calendarLib) {
         let makeCalendar = function (data) {
             let el = calendarLib.el
 
@@ -20,7 +21,7 @@ define([
                     let dateSelected = date.parse(calendar.daysSelected[0]);
 
                     let findDataForDate = _.find(data, function (d) {
-                        return date.parse(d.data.date).compactFormat == date.parse(dateSelected).compactFormat;
+                        return date.parse(d.date).compactFormat == date.parse(dateSelected).compactFormat;
                     });
 
                     storage.set('edit-date', dateSelected.compactFormat);
@@ -29,7 +30,7 @@ define([
                     if (findDataForDate) {
                         renderEvents([findDataForDate]);
                     } else {
-                        renderEvents([{ data: { date: dateSelected } }]);
+                        renderEvents([{ date: dateSelected }]);
                     }
                 } else {
                     renderEvents([]);
@@ -96,16 +97,16 @@ define([
                 beforeCreateDay: function (input) {
                     let dateCurrent = date.parse(input.date);
                     let findDataForDate = _.find(data, function (d) {
-                        return date.parse(d.data.date).compactFormat == dateCurrent.compactFormat;
+                        return date.parse(d.date).compactFormat == dateCurrent.compactFormat;
                     });
 
                     if (findDataForDate) {
                         let day = input.day;
-                        let items = findDataForDate.data.items;
+                        let items = findDataForDate.items;
                         let container = el('div', { class: 'activities-container' });
                         container.children = [];
                         items.forEach(function (item) {
-                            let color = item.tag.data.color;
+                            let color = item.tag.color;
                             container.children.push(el('div', { class: 'activity', style: { 'background-color': color } }));
                         });
 
@@ -130,15 +131,15 @@ define([
             return calendar;
         }
 
-        let renderEvents = function (data) {
+        let renderEvents = function (inputNote) {
             let makeItemContent = function (item) {
-                return item.content ? item.content : `Worked on <span class="tag-name" > ${item.tag.data.name}</span> `;
+                return item.content ? item.content : `Worked on <span class="tag-name" > ${item.tag.name}</span> `;
             }
 
             let renderItem = function (item) {
                 let content = makeItemContent(item);
                 return `
-                <div class= "item" style ="background-color:${item.tag.data.color}">
+                <div class= "item" style ="background-color:${item.tag.color}">
                     <div class="item-name">${content}</div>
                 </div>
                 `;
@@ -162,27 +163,27 @@ define([
             let renderNote = function (note, single) {
                 let noteBlock = $(`<div class="note">
                 <div class="note-header">
-                    <div class="date">${date.parse(note.data.date).humanFormat}</div>
+                    <div class="date">${date.parse(note.date).humanFormat}</div>
                     <button class="update-note" type="button"><span class="material-icons">create</span></button>
                 </div>
-                ${renderItems(note.data.items)}
+                ${renderItems(note.items)}
                 </div> `);
 
                 if (single) {
-                    console.log('set-click', note.data.date);
+                    console.log('set-click', note.date);
 
                     let clickEdit = function (e) {
                         e.preventDefault();
-                        console.log('set-click-event', note.data.date);
+                        console.log('set-click-event', note.date);
 
-                        storage.set('edit-date', date.parse(note.data.date).compactFormat);
+                        storage.set('edit-date', date.parse(note.date).compactFormat);
                         navigator.set('newNote');
 
                         return false;
                     };
 
                     let updateLink = $('.calendar-action-edit-date');
-                    updateLink.text(`Edit ${date.parse(note.data.date).dashedFormat}`);
+                    updateLink.text(`Edit ${date.parse(note.date).dashedFormat}`);
                     updateLink.off("click");
                     updateLink.click(clickEdit);
 
@@ -194,8 +195,8 @@ define([
             }
 
             $('.recent_notes_container').empty();
-            let oneNote = data.length == 1;
-            data.forEach(function (note) {
+            let oneNote = inputNote.length == 1;
+            _.values(inputNote).forEach(function (note) {
                 $('.recent_notes_container').append(renderNote(note, oneNote));
             });
         }
@@ -205,45 +206,14 @@ define([
             makeCalendar(data);
         }
 
-        let fetchData = function (cb) {
-            let allNotes;
-            return db.init()
-                .then(function () {
-                    return note.fetchAllComplete();
-                })
-                .then(function (data) {
-                    allNotes = data;
-                    return tag.fetchAllComplete();
-                })
-                .then(function (allTags) {
-                    let tagMap = {};
-                    allTags.forEach(function (tag) {
-                        tagMap[tag.data.name] = tag;
-                    });
-                    // console.log(tagMap);
-
-                    allNotes = allNotes.map(function (n) {
-                        n.data['items'] = n.data.items.map(function (item) {
-                            item['tag'] = tagMap[item['tag']];
-                            return item
-                        });
-                        return n;
-                    });
-                    // console.log(allNotes);
-
-                    cb(allNotes)
-                    return Promise.resolve(allNotes);
-                });
-        };
-
         let clearEntirePage = function () {
             $('.calendar-container').empty();
             $('.recent_notes_container').empty();
         }
 
         let renderFullPage = function () {
-            return Promise.resolve().then(function () {
-                return cache.cache("all-notes", 1000 * 60 * 60 * 12 /* 12 hours */, fetchData, renderPage);
+            return fetchAll.use(function (data) {
+                renderPage(data.notes);
             });
         }
 

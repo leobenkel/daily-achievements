@@ -144,6 +144,7 @@ define([
                 };
                 note.save(noteData)
                     .then(function () {
+                        cache.clear("all-notes");
                         navigator.set('');
                     });
 
@@ -158,7 +159,12 @@ define([
                     setupInputHidden(form);
                     handleSubmit(form);
 
-                    return getAllTags().then(function (allTags) {
+                    return cache.cache()
+
+                    getAllTags().then(function (allTags) {
+
+
+
                         setupItemContainer(form, allTags);
                         form.find('button[type="submit"]').prop('disabled', false);
                     });
