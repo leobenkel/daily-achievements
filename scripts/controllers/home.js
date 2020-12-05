@@ -1,15 +1,17 @@
 define([
     '/scripts/core/controller.js',
+    '/scripts/core/navigator.js',
     '/scripts/data/database.js',
     '/scripts/data/note.js',
     '/scripts/data/tag.js',
     '/scripts/util/date.js',
     '/scripts/util/cache.js',
+    '/scripts/util/local-storage.js',
     'jquery',
     'lodash',
     'calendarLib'
 ],
-    function (controller, db, note, tag, date, cache, $, _, calendarLib) {
+    function (controller, navigator, db, note, tag, date, cache, storage, $, _, calendarLib) {
         let makeCalendar = function (data) {
             let el = calendarLib.el
 
@@ -107,38 +109,51 @@ define([
             return calendar;
         }
 
-        let makeItemContent = function (item) {
-            return item.content ? item.content : `Worked on <span class="tag-name" > ${item.tag.data.name}</span> `;
-        }
-
-        let renderItem = function (item) {
-            let content = makeItemContent(item);
-            return `
-            <div class= "item" style ="background-color:${item.tag.data.color}">
-                <div class="item-name">${content}</div>
-            </div>
-            `;
-        }
-
-        let renderItems = function (items) {
-            let itemsContent = items.map(function (item) {
-                return renderItem(item);
-            }).join('');
-            return `
-            <div class="items-container">
-                ${itemsContent}
-            </div>
-            `;
-        };
-
-        let renderNote = function (note) {
-            return `<div class="note">
-            <div class="date">${date.display(note.data.date)}</div>
-                ${renderItems(note.data.items)}
-            </div> `;
-        }
-
         let renderEvents = function (data) {
+            let makeItemContent = function (item) {
+                return item.content ? item.content : `Worked on <span class="tag-name" > ${item.tag.data.name}</span> `;
+            }
+
+            let renderItem = function (item) {
+                let content = makeItemContent(item);
+                return `
+                <div class= "item" style ="background-color:${item.tag.data.color}">
+                    <div class="item-name">${content}</div>
+                </div>
+                `;
+            }
+
+            let renderItems = function (items) {
+                let itemsContent = items.map(function (item) {
+                    return renderItem(item);
+                }).join('');
+                return `
+                <div class="items-container">
+                    ${itemsContent}
+                </div>
+                `;
+            };
+
+            let renderNote = function (note) {
+                let noteBlock = $(`<div class="note">
+                <div class="note-header">
+                    <div class="date">${date.display(note.data.date)}</div>
+                    <button class="update-note" type="button"><span class="material-icons">add_circle</span></button>
+                </div>
+                ${renderItems(note.data.items)}
+                </div> `);
+                let updateLink = noteBlock.find('.update-note');
+                updateLink.click(function (e) {
+                    e.preventDefault();
+
+                    storage.set('edit-date', note.data.date);
+                    navigator.set('newNote');
+
+                    return false;
+                });
+                return noteBlock;
+            }
+
             $('.recent_notes_container').empty();
             data.forEach(function (note) {
                 $('.recent_notes_container').append(renderNote(note));

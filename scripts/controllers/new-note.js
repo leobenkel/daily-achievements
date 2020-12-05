@@ -4,13 +4,14 @@ define([
     '/scripts/data/tag.js',
     '/scripts/data/note.js',
     '/scripts/util/date.js',
+    '/scripts/util/local-storage.js',
     '/scripts/ui/engine.js',
     'jquery',
     'lodash',
     `text!/scripts/templates/item_form.html`,
     `text!/scripts/templates/tag_form.html`,
 ],
-    function (controller, navigator, tag, note, date, uiEngine, $, _, itemForm, tagForm) {
+    function (controller, navigator, tag, note, date, storage, uiEngine, $, _, itemForm, tagForm) {
         let tagFormF = $(tagForm);
         tag.initForm(tagFormF, true, function (allTags) {
             tagFormF.add('body').find('.item-tag-select').each(function (i, sel) {
@@ -38,8 +39,8 @@ define([
         }
 
         let setupInputHidden = function (form) {
-            let today = date.today();
-            form.find('input[name="date"]').val(today);
+            let currentDate = storage.get('edit-date', date.today());
+            form.find('input[name="date"]').val(currentDate);
         };
 
         let initSelect = function (tagSelect, allTags) {
