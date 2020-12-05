@@ -17,20 +17,35 @@ define([
 
             let reactOnSelect = function (calendar) {
                 if (calendar.daysSelected.length > 0) {
-                    let dateSelected = date.reduceDate(calendar.daysSelected[0]);
+                    let dateSelected = date.parse(calendar.daysSelected[0]);
 
                     let findDataForDate = _.find(data, function (d) {
-                        return d.data.date == dateSelected;
+                        return date.parse(d.data.date).compactFormat == date.parse(dateSelected).compactFormat;
                     });
 
                     if (findDataForDate) {
                         renderEvents([findDataForDate]);
                     } else {
-                        renderEvents([]);
+                        renderEvents([{ data: { date: dateSelected } }]);
                     }
                 } else {
                     renderEvents([]);
                 }
+            };
+
+            let getSelectedDate = function () {
+                let savedDate = storage.get('edit-date');
+                let convertedDate = date.parse(savedDate);
+                console.log(savedDate);
+                console.log(convertedDate);
+                return savedDate ? convertedDate.dashedFormat : date.today().dashedFormat;
+            }
+
+            let goToday = function () {
+                let today = date.today().dashedFormat;
+                calendar.daysSelected = [today];
+                calendar.goToDate(today);
+                reactOnSelect(calendar);
             }
 
             // https://github.com/mauroreisvieira/hello-week
@@ -38,14 +53,14 @@ define([
                 selector: '.calendar-container',
                 langFolder: 'https://cdn.jsdelivr.net/npm/hello-week@3.0.4-beta/dist/langs/',
                 format: 'YYYY-MM-DD',
-                defaultDate: null,
+                defaultDate: getSelectedDate(),
                 todayHighlight: true,
                 weekStart: 1,
                 monthShort: false,
                 weekShort: true,
                 minDate: null,
-                maxDate: date.todayDashSeparated(),
-                daysSelected: [date.todayDashSeparated()],
+                maxDate: date.today().dashedFormat,
+                daysSelected: [getSelectedDate()],
                 daysHighlight: null,
                 multiplePick: false,
                 disableDaysOfWeek: null,
@@ -55,13 +70,15 @@ define([
                 locked: false,
                 rtl: false,
                 nav: ['◀', '▶'],
-                timezoneOffset: new Date().getTimezoneOffset(),
+                timezoneOffset: 0,//new Date().getTimezoneOffset(),
                 onLoad: function () {
-                    $('.calendar-action-today').click(function () {
-                        let today = date.todayDashSeparated()
-                        calendar.daysSelected = [today];
-                        calendar.goToDate(today);
-                        reactOnSelect(calendar);
+                    $('.calendar-action-today').off("click", "**");
+                    $('.calendar-action-today').click(goToday);
+                    $('.calendar-action-refresh').off("click", "**");
+                    $('.calendar-action-refresh').click(function () {
+                        cache.clear("all-notes");
+                        clearEntirePage();
+                        renderFullPage();
                     });
 
                     reactOnSelect(calendar);
@@ -74,10 +91,11 @@ define([
                     reactOnSelect(calendar);
                 },
                 beforeCreateDay: function (input) {
-                    let dateCurrent = date.reduceDate(input.date);
+                    let dateCurrent = date.parse(input.date);
                     let findDataForDate = _.find(data, function (d) {
-                        return d.data.date == dateCurrent;
+                        return date.parse(d.data.date).compactFormat == dateCurrent.compactFormat;
                     });
+
                     if (findDataForDate) {
                         let day = input.day;
                         let items = findDataForDate.data.items;
@@ -124,45 +142,55 @@ define([
             }
 
             let renderItems = function (items) {
-                let itemsContent = items.map(function (item) {
-                    return renderItem(item);
-                }).join('');
-                return `
+                if (items) {
+                    let itemsContent = items.map(function (item) {
+                        return renderItem(item);
+                    }).join('');
+                    return `
                 <div class="items-container">
                     ${itemsContent}
                 </div>
                 `;
+                } else {
+                    return '';
+                }
             };
 
-            let renderNote = function (note) {
+            let renderNote = function (note, single) {
                 let noteBlock = $(`<div class="note">
                 <div class="note-header">
-                    <div class="date">${date.display(note.data.date)}</div>
-                    <button class="update-note" type="button"><span class="material-icons">add_circle</span></button>
+                    <div class="date">${date.parse(note.data.date).humanFormat}</div>
                 </div>
                 ${renderItems(note.data.items)}
                 </div> `);
-                let updateLink = noteBlock.find('.update-note');
-                updateLink.click(function (e) {
-                    e.preventDefault();
 
-                    storage.set('edit-date', note.data.date);
-                    navigator.set('newNote');
+                if (single) {
+                    console.log('set-click', note.data.date);
+                    let updateLink = $('.calendar-action-edit-date');
+                    updateLink.text(`Edit ${date.parse(note.data.date).dashedFormat}`);
+                    updateLink.off("click");
+                    updateLink.click(function (e) {
+                        e.preventDefault();
+                        console.log('set-click-event', note.data.date);
 
-                    return false;
-                });
+                        storage.set('edit-date', date.parse(note.data.date).compactFormat);
+                        navigator.set('newNote');
+
+                        return false;
+                    });
+                }
                 return noteBlock;
             }
 
             $('.recent_notes_container').empty();
+            let oneNote = data.length == 1;
             data.forEach(function (note) {
-                $('.recent_notes_container').append(renderNote(note));
+                $('.recent_notes_container').append(renderNote(note, oneNote));
             });
         }
 
         let renderPage = function (data) {
             renderEvents(data);
-
             makeCalendar(data);
         }
 
@@ -197,13 +225,20 @@ define([
                 });
         };
 
+        let clearEntirePage = function () {
+            $('.calendar-container').empty();
+            $('.recent_notes_container').empty();
+        }
+
+        let renderFullPage = function () {
+            return Promise.resolve().then(function () {
+                return cache.cache("all-notes", 1000 * 60 * 60 * 12 /* 12 hours */, fetchData, renderPage);
+            });
+        }
+
         return {
             render: function () {
-                return controller.make("home", "Home", function () {
-                    return Promise.resolve().then(function () {
-                        return cache("all-notes", 1000 * 60 * 60 * 12 /* 12 hours */, fetchData, renderPage);
-                    });
-                }).render();
+                return controller.make("home", "Home", renderFullPage).render();
             }
         };
     });

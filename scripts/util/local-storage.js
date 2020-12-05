@@ -1,6 +1,9 @@
 define([], function () {
     let obfuscated = true;
 
+    // TODO: Turn to false when release
+    let debug = true;
+
     let encode = function (str) {
         return obfuscated ? btoa(unescape(encodeURIComponent(str))) : str;
     };
@@ -13,23 +16,31 @@ define([], function () {
         window.localStorage.setItem(encode(key), encode(value));
         let obj = {}
         obj[key] = value;
+        if (debug) console.log('SET', key, value);
         return obj;
     };
 
     let getStorage = function (key, defaultValue = null) {
         let value = window.localStorage.getItem(encode(key));
         if (value && value != "null") {
-            return decode(value);
+            let decodedValue = decode(value)
+            if (debug) console.log('GET', key, decodedValue);
+            return decodedValue;
         } else {
-            if (defaultValue) setStorage(key, defaultValue);
+            if (debug) console.log('GET (default)', key, defaultValue);
             return defaultValue;
         }
     };
 
+    let clear = function (key) {
+        window.localStorage.removeItem(encode(key));
+    }
+
     let localStorage = {
         get: getStorage,
         set: setStorage,
-        clear: function () {
+        clear: clear,
+        clearAll: function (key) {
             window.localStorage.clear();
         }
     };

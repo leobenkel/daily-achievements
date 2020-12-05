@@ -3,8 +3,14 @@ define([
     'scripts/util/local-storage.js'
 ],
     function (navigator, storage) {
+        let isConnectedCache;
+
+
         let isConnected = function () {
-            return !!getUser();
+            if (!isConnectedCache) {
+                isConnectedCache = !!getUser();
+            }
+            return isConnectedCache;
         };
 
         let getUser = function () {
@@ -18,6 +24,7 @@ define([
 
         let registerUser = function (data) {
             storage.set('users', JSON.stringify(data));
+            isConnectedCache = null;
         };
 
         return {

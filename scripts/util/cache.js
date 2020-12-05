@@ -21,6 +21,7 @@ define([
 
             // not expired yet
             if (getTime() < time) {
+                console.log("cache-get", name, value);
                 cb(value, true);
                 return;
             }
@@ -35,5 +36,12 @@ define([
         });
     };
 
-    return cache;
+    let clear = function (name) {
+        storage.clear(name);
+    };
+
+    return {
+        cache: cache,
+        clear: clear
+    }
 });

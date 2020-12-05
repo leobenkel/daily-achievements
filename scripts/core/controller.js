@@ -16,7 +16,7 @@ define([
                     let $e = $(element)
                     let svg_file = $e.data("svg");
 
-                    cache(
+                    cache.cache(
                         svg_file,
                         1000 * 3600 * 24 * 7 /* 7 days */,
                         function (cb) {

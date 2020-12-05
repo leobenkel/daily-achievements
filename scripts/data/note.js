@@ -1,7 +1,8 @@
 define([
-    'scripts/data/database.js'
+    'scripts/data/database.js',
+    'scripts/util/date.js'
 ],
-    function (db) {
+    function (db, date) {
         /*
             * note_id (PK)
             * author_id (indexed)(required)
