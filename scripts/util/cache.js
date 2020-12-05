@@ -1,7 +1,8 @@
 define([
     '/scripts/util/configuration.js',
     '/scripts/util/local-storage.js',
-], function (config, storage) {
+    'lodash'
+], function (config, storage, _) {
     let getTime = function () {
         var d = new Date();
         var n = d.getTime();
@@ -40,8 +41,25 @@ define([
         storage.clear(name);
     };
 
+
+    let update = function (name, keyPath, newValue) {
+        let r = storage.get(name);
+        if (r) {
+            // cache was found
+            r = JSON.parse(r);
+            let time = r.tty;
+            let value = r.value;
+            value = _.set(value, keyPath, newValue);
+            storage.set(name, JSON.stringify({
+                value: value,
+                tty: time
+            }));
+        }
+    }
+
     return {
         cache: cache,
-        clear: clear
+        clear: clear,
+        update: update
     }
 });

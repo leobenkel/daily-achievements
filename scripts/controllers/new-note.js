@@ -3,15 +3,17 @@ define([
     '/scripts/core/navigator.js',
     '/scripts/data/tag.js',
     '/scripts/data/note.js',
+    '/scripts/data/fetch-all.js',
     '/scripts/util/date.js',
     '/scripts/util/local-storage.js',
+    '/scripts/util/cache.js',
     '/scripts/ui/engine.js',
     'jquery',
     'lodash',
     `text!/scripts/templates/item_form.html`,
     `text!/scripts/templates/tag_form.html`,
 ],
-    function (controller, navigator, tag, note, date, storage, uiEngine, $, _, itemForm, tagForm) {
+    function (controller, navigator, tag, note, fetchAll, date, storage, cache, uiEngine, $, _, itemForm, tagForm) {
         let tagFormF = $(tagForm);
         tag.initForm(tagFormF, true, function (allTags) {
             tagFormF.add('body').find('.item-tag-select').each(function (i, sel) {
@@ -31,19 +33,12 @@ define([
             $error.removeClass('empty');
         }
 
-        let getAllTags = function () {
-            return tag.fetchAll()
-                .then(function (tags) {
-                    return Promise.resolve(tags.data);
-                });
-        }
-
         let setupInputHidden = function (form) {
             let currentDate = storage.get('edit-date', date.today());
             form.find('input[name="date"]').val(currentDate);
         };
 
-        let initSelect = function (tagSelect, allTags) {
+        let initSelect = function (tagSelect, allData) {
             if (tagSelect.length == 0) {
                 return;
             }
@@ -52,7 +47,7 @@ define([
 
             tagSelect.find('option').remove();
             tagSelect.append('<option disabled selected value> -- select a Tag -- </option>');
-            allTags.forEach(function (tag) {
+            _.values(allData.tags).forEach(function (tag) {
                 tagSelect.append(`<option value="${tag.name}">${tag.name}</option>`);
             });
             tagSelect.append('<option value="add-new-tag">Add new tag</option>');
@@ -97,7 +92,7 @@ define([
             addBtn.click();
         };
 
-        let handleSubmit = function ($form) {
+        let handleSubmit = function ($form, allData) {
             $form.submit(function (e) {
                 e.preventDefault();
                 let form = $(this);
@@ -137,14 +132,20 @@ define([
                     });
 
                 let noteData = {
-                    author_id: toSave['author_id'],
                     note_id: toSave['date'],
                     date: toSave['date'],
                     items: itemsToSave
                 };
+
+                // TODO: need all data for it to work
+                let noteDataToSave = _.cloneDeep(noteData);
+                noteDataToSave['items'] = noteData.items.map(function (item) {
+                    return { tag: allData.tags[item.tag] };
+                });
+
                 note.save(noteData)
                     .then(function () {
-                        cache.clear("all-notes");
+                        cache.update("all-notes", `notes.${noteData.note_id}`, noteDataToSave);
                         navigator.set('');
                     });
 
@@ -157,15 +158,10 @@ define([
                 return controller.make("new-note", "New Note", function () {
                     let form = $('#new-note-form');
                     setupInputHidden(form);
-                    handleSubmit(form);
 
-                    return cache.cache()
-
-                    getAllTags().then(function (allTags) {
-
-
-
-                        setupItemContainer(form, allTags);
+                    return fetchAll.use(function (allData) {
+                        handleSubmit(form, allData);
+                        setupItemContainer(form, allData);
                         form.find('button[type="submit"]').prop('disabled', false);
                     });
                 }).render();
