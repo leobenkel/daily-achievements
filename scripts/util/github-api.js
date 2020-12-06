@@ -26,8 +26,6 @@ define([
                 return githubClient.getRepo(githubUsername, databaseStorageRepoName);
             }
 
-
-
             let manageErrors = function (error, defaultValue) {
                 let repoIsCreatedButEmpty = function () {
                     return error.response.statusText == "Not Found" && error.response.data.message == "This repository is empty."

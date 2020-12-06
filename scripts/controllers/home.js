@@ -68,6 +68,8 @@ define([
                     storage.set('edit-date', firstOfTheMonth.compactFormat);
                 }
 
+                $('.recent_notes_container').empty();
+
                 fetchAll.useMonth(month, function (data, newData) {
                     if (newData) {
                         clearEntirePage();

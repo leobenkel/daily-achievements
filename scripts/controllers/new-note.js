@@ -33,9 +33,14 @@ define([
             $error.removeClass('empty');
         }
 
+        let getCurrentDate = function () {
+            let d = date.parse(storage.get('edit-date', date.today()));
+            return d;
+        }
+
         let setupInputHidden = function (form, allData) {
-            let currentDate = storage.get('edit-date', date.today());
-            form.find('input[name="date"]').val(currentDate);
+            let currentDate = getCurrentDate();
+            form.find('input[name="date"]').val(currentDate.dashedFormat);
         };
 
         let initSelect = function (tagSelect, allData, selected) {
@@ -123,7 +128,10 @@ define([
                 resetError(form);
                 let values = form.serializeArray();
                 // console.log(values);
-                let toSave = {};
+                let toSave = {
+                    item: [],
+                    date: getCurrentDate().compactFormat
+                };
 
                 // check failed inputs
                 let failedInputs = form.find('[data-required="true"]').filter(function (i, elem) {
@@ -182,9 +190,9 @@ define([
             render: function () {
                 return controller.make("new-note", "New Note", function () {
                     let form = $('#new-note-form');
+                    let currentDate = getCurrentDate();
 
-
-                    return fetchAll.use(function (allData) {
+                    return fetchAll.useMonth(currentDate.month, function (allData) {
                         setupInputHidden(form, allData);
                         handleSubmit(form, allData);
                         setupItemContainer(form, allData);
