@@ -24,17 +24,29 @@ define([
             return db.loadAll(tableName);
         }
 
-        let fetchAllComplete = function () {
+        let fetchAllComplete = function (specificMonth) {
             return fetchAll().then(function (notes) {
-                // TODO: only fetch recent onces.
-                let allNotes = [];
-                return notes.data.map(function (n) {
+                let mappedNote = {};
+                notes.forEach(function (n) {
+                    mappedNote[n.name] = n;
+                });
+
+                let allNotes = _.cloneDeep(mappedNote);
+                let noteToFetch = _.values(allNotes);
+
+                if (specificMonth) {
+                    noteToFetch = _.filter(noteToFetch, function (n) {
+                        return date.parse(n.name).month == specificMonth;
+                    });
+                }
+
+                return noteToFetch.map(function (n) {
                     return function () { return fetchOne(n.name); }
                 })
                     .reduce(function (prev, cur) {
                         return prev.then(cur)
                             .then(function (r) {
-                                allNotes.push(r);
+                                allNotes[r.date] = _.merge(allNotes[r.date], r);
                                 return Promise.resolve();
                             });
                     }, Promise.resolve())

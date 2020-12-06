@@ -17,12 +17,18 @@ define([
 
         let load = function (table, id) {
             let ghClient = getGHClient();
-            return ghClient.getData(table, id);
+            return ghClient.getData(table, id)
+                .then(function (returnedData) {
+                    return Promise.resolve(returnedData.data);
+                });
         }
 
         let loadAll = function (table) {
             let ghClient = getGHClient();
-            return ghClient.getTable(table);
+            return ghClient.getTable(table)
+                .then(function (returnedData) {
+                    return Promise.resolve(returnedData.data);
+                });
         }
 
         let init = function () {

@@ -57,14 +57,18 @@ define([
         }
 
         let resetScreen = function (name, title, cb) {
-            require([`text!/scripts/templates/${name}.html`],
+            return require([`text!/scripts/templates/${name}.html`],
                 function (template) {
                     renderPage(template);
                     $(".page_name").text(title);
                     $("html, body").animate({ scrollTop: 0 }, "slow");
                     handleConnection();
                     renderSVG(function () {
-                        cb().then(function () {
+                        let p = cb();
+                        if (!p) {
+                            p = Promise.resolve();
+                        }
+                        p.then(function () {
                             engine.run();
                         });
                     });
@@ -81,7 +85,7 @@ define([
             } else {
                 $('title').text("Daily Achievements")
             }
-            return function () { resetScreen(name, title, render); };
+            return function () { return resetScreen(name, title, render); };
         };
 
         return {

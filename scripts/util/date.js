@@ -18,7 +18,9 @@ define([], function () {
             var s = "000000000" + num;
             return s.substr(s.length - size);
         }
-
+        day = parseInt(day),
+            month = parseInt(month),
+            year = parseInt(year)
         let paddedMonth = pad(month, 2);
         let paddedDay = pad(day, 2);
 
@@ -29,7 +31,10 @@ define([], function () {
         return {
             compactFormat: compactFormat,
             dashedFormat: dashedFormat,
-            humanFormat: humanFormat
+            humanFormat: humanFormat,
+            day: day,
+            month: month,
+            year: year
         };
     };
 
@@ -69,6 +74,7 @@ define([], function () {
 
     return {
         today: today,
-        parse: parse
+        parse: parse,
+        make: dateObj
     };
 });

@@ -23,15 +23,14 @@ define([
 
         let fetchAllComplete = function () {
             return fetchAll().then(function (tags) {
-                // TODO: only fetch recent onces.
-                let allTags = [];
-                return tags.data.map(function (n) {
+                let allTags = {};
+                return tags.map(function (n) {
                     return function () { return fetchOne(n.name); }
                 })
                     .reduce(function (prev, cur) {
                         return prev.then(cur)
                             .then(function (r) {
-                                allTags.push(r);
+                                allTags[r.name] = r;
                                 return Promise.resolve();
                             });
                     }, Promise.resolve())

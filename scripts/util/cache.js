@@ -41,7 +41,6 @@ define([
         storage.clear(name);
     };
 
-
     let update = function (name, keyPath, newValue) {
         let r = storage.get(name);
         if (r) {
@@ -55,11 +54,51 @@ define([
                 tty: time
             }));
         }
+    };
+
+    let smartIterativeCache = function (name, expiration, cacheNeedUpdate, fetchData, combineCache, readyToUseData) {
+        let saveData = function (newData) {
+            storage.set(name, JSON.stringify({
+                value: newData,
+                tty: getTime() + expiration
+            }));
+        }
+
+        let updateData = function (currentCache) {
+            return fetchData(currentCache, function (newData) {
+                let completeValue = combineCache(currentCache, newData);
+                saveData(completeValue);
+                console.log("smart-cache-updated", name, completeValue);
+                return readyToUseData(completeValue, true);
+            });
+        }
+
+        let r = storage.get(name);
+        // cache was found
+        if (r && config.cache) {
+            r = JSON.parse(r);
+            let time = r.tty;
+            let value = r.value;
+
+            // not expired yet
+            if (getTime() < time) {
+                let needUpdate = cacheNeedUpdate(value);
+                if (needUpdate) {
+                    return updateData(value);
+                }
+
+                console.log("smart-cache-get", name, value);
+                return readyToUseData(value, false);
+            }
+        }
+
+        return updateData();
     }
 
     return {
         cache: cache,
         clear: clear,
-        update: update
+        update: update,
+        smartIterativeCache: smartIterativeCache
     }
 });

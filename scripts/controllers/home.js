@@ -13,15 +13,23 @@ define([
     'calendarLib'
 ],
     function (controller, navigator, db, note, tag, date, cache, fetchAll, storage, $, _, calendarLib) {
-        let makeCalendar = function (data) {
+        let getCurrentDate = function () {
+            let savedDate = storage.get('edit-date');
+            let convertedDate = date.parse(savedDate);
+            console.log(savedDate);
+            console.log(convertedDate);
+            return savedDate ? convertedDate : date.today();
+        }
+
+        let makeCalendar = function (allDataDB) {
             let el = calendarLib.el
 
             let reactOnSelect = function (calendar) {
                 if (calendar.daysSelected.length > 0) {
                     let dateSelected = date.parse(calendar.daysSelected[0]);
 
-                    let findDataForDate = _.find(data, function (d) {
-                        return date.parse(d.date).compactFormat == date.parse(dateSelected).compactFormat;
+                    let findDataForDate = _.find(allDataDB, function (d) {
+                        return d.date && date.parse(d.date).compactFormat == date.parse(dateSelected).compactFormat;
                     });
 
                     storage.set('edit-date', dateSelected.compactFormat);
@@ -38,18 +46,36 @@ define([
             };
 
             let getSelectedDate = function () {
-                let savedDate = storage.get('edit-date');
-                let convertedDate = date.parse(savedDate);
-                console.log(savedDate);
-                console.log(convertedDate);
-                return savedDate ? convertedDate.dashedFormat : date.today().dashedFormat;
+                return getCurrentDate().dashedFormat;
             }
 
             let goToday = function () {
-                let today = date.today().dashedFormat;
-                calendar.daysSelected = [today];
-                calendar.goToDate(today);
-                reactOnSelect(calendar);
+                let today = date.today();
+                calendar.daysSelected = [today.dashedFormat];
+                storage.set('edit-date', today.compactFormat);
+                calendar.goToDate(today.dashedFormat);
+                onMonthChange();
+            }
+
+            let onMonthChange = function () {
+                let month = calendar.getMonth();
+                console.log('cal-input', month);
+
+                let selectedDate = getCurrentDate();
+                if (month != selectedDate.month) {
+                    let firstOfTheMonth = date.make(1, month, calendar.getYear());
+                    calendar.daysSelected = [firstOfTheMonth.dashedFormat];
+                    storage.set('edit-date', firstOfTheMonth.compactFormat);
+                }
+
+                fetchAll.useMonth(month, function (data, newData) {
+                    if (newData) {
+                        clearEntirePage();
+                        renderFullPage();
+                    } else {
+                        reactOnSelect(calendar);
+                    }
+                });
             }
 
             // https://github.com/mauroreisvieira/hello-week
@@ -87,17 +113,15 @@ define([
 
                     reactOnSelect(calendar);
                 },
-                onNavigation: function () {
-                    calendar.daysSelected = [];
-                    reactOnSelect(calendar);
-                },
+                onNavigation: onMonthChange,
                 onSelect: function () {
                     reactOnSelect(calendar);
                 },
                 beforeCreateDay: function (input) {
                     let dateCurrent = date.parse(input.date);
-                    let findDataForDate = _.find(data, function (d) {
-                        return date.parse(d.date).compactFormat == dateCurrent.compactFormat;
+
+                    let findDataForDate = _.find(allDataDB, function (d) {
+                        return d.date && date.parse(d.date).compactFormat == dateCurrent.compactFormat;
                     });
 
                     if (findDataForDate) {
@@ -196,9 +220,11 @@ define([
 
             $('.recent_notes_container').empty();
             let oneNote = inputNote.length == 1;
-            _.values(inputNote).forEach(function (note) {
-                $('.recent_notes_container').append(renderNote(note, oneNote));
-            });
+            if (oneNote) {
+                _.values(inputNote).forEach(function (note) {
+                    $('.recent_notes_container').append(renderNote(note, oneNote));
+                });
+            }
         }
 
         let renderPage = function (data) {
@@ -212,8 +238,9 @@ define([
         }
 
         let renderFullPage = function () {
-            return fetchAll.use(function (data) {
+            return fetchAll.useMonth(getCurrentDate().month, function (data) {
                 renderPage(data.notes);
+                return Promise.resolve();
             });
         }
 

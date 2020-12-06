@@ -97,7 +97,7 @@ define([
         let setupItemContainer = function (form, allData) {
             let addBtn = form.find('#add-item');
             let currentDate = storage.get('edit-date', date.today());
-            let currentNote = allData.notes[currentDate];
+            let currentNote = allData.notes[currentDate] ? allData.notes[currentDate] : { items: [] };
             console.log('CURRENT NOTE', currentNote);
 
             currentNote.items.forEach(function (item) {
@@ -163,7 +163,7 @@ define([
 
                 // TODO: need all data for it to work
                 let noteDataToSave = _.cloneDeep(noteData);
-                noteDataToSave['items'] = noteData.items.map(function (item) {
+                noteDataToSave['items'] = noteDataToSave.items.map(function (item) {
                     item['tag'] = allData.tags[item.tag];
                     return item;
                 });
