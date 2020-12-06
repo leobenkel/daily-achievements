@@ -164,6 +164,7 @@
     .styled-select {
         position: relative;
         padding-top: 36px;
+        padding-bottom: 16px;
         z-index: $index_on_bottom;
 
         label {
@@ -214,6 +215,8 @@
             z-index: $index_middle_top;
             border: black 1px solid;
             width: calc(100% - 60px);
+            max-height: 135px;
+            overflow-y: auto;
         }
 
         /* Hide the items when the select box is closed: */

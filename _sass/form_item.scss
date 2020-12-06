@@ -1,6 +1,40 @@
 @import "vars";
 
-.add-item-block {
-    position: relative;
-    z-index: $index_on_bottom;
+#item-container {
+    .add-item-block {
+        border-radius: 8px;
+        position: relative;
+        z-index: $index_on_bottom;
+        padding-top: 32px;
+        width: 650px;
+        z-index: $index_middle_top;
+
+        .styled-input.wide {
+            width: 100%;
+        }
+
+        .delete-btn-wrapper {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: auto;
+        }
+
+        .close-btn {
+            display: block;
+            cursor: pointer;
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            border-radius: 8px;
+            border: 1px solid black;
+            width: 32px;
+            height: 32px;
+            outline: none;
+
+            &:active {
+                outline: none;
+            }
+        }
+    }
 }
