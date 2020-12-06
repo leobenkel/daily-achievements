@@ -48,7 +48,7 @@ define([
         return {
             use: function (cb) {
                 return Promise.resolve().then(function () {
-                    return cache.cache("all-notes", 1000 * 60 * 60 * 12 /* 12 hours */, fetchData, cb);
+                    return cache.cache("all-notes", 1000 * 60 * 60 * 48 /* 48 hours */, fetchData, cb);
                 });
             }
         }

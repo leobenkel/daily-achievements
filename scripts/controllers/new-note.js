@@ -33,12 +33,12 @@ define([
             $error.removeClass('empty');
         }
 
-        let setupInputHidden = function (form) {
+        let setupInputHidden = function (form, allData) {
             let currentDate = storage.get('edit-date', date.today());
             form.find('input[name="date"]').val(currentDate);
         };
 
-        let initSelect = function (tagSelect, allData) {
+        let initSelect = function (tagSelect, allData, selected) {
             if (tagSelect.length == 0) {
                 return;
             }
@@ -56,40 +56,64 @@ define([
             uiEngine.run();
         }
 
-        let setupItemContainer = function (form, allTags) {
-            let addBtn = form.find('#add-item');
+        let addItemBlock = function (form, allData, currentItem) {
             let itemContainer = form.find('#item-container');
+            // Item ID
+            let item_count = form.find('.add-item-block').length;
+            let itemF = $(itemForm.replaceAll("ITEM_COUNT", item_count));
+
+            // Tag selector
+            let tagSelect = itemF.find('.item-tag-select');
+            initSelect(tagSelect, allData);
+
+            let contentField = itemF.find('.item-content-input');
+
+            tagSelect.change(function () {
+                // need to catch add tag pop up
+                let value = $(this).val();
+                if (value == 'add-new-tag') {
+                    tag.openForm(tagFormF);
+                    contentField.attr('placeholder', `What have you accomplished?`);
+                } else {
+                    contentField.attr('placeholder', `Worked on ${value}`);
+                }
+            });
+
+            // Delete button
+            itemF.find('.delete-item-btn').click(function () {
+                itemF.remove();
+            });
+            itemContainer.append(itemF);
+
+            if (currentItem) {
+                console.log('CURRENT_ITEM', currentItem);
+                tagSelect.val(currentItem.tag.name).change();
+                if (currentItem.content) {
+                    contentField.val(currentItem.content);
+                }
+            }
+        }
+
+        let setupItemContainer = function (form, allData) {
+            let addBtn = form.find('#add-item');
+            let currentDate = storage.get('edit-date', date.today());
+            let currentNote = allData.notes[currentDate];
+            console.log('CURRENT NOTE', currentNote);
+
+            currentNote.items.forEach(function (item) {
+                addItemBlock(form, allData, item);
+            });
 
             addBtn.click(function () {
-                // Item ID
-                let item_count = form.find('.add-item-block').length;
-                let itemF = $(itemForm.replaceAll("ITEM_COUNT", item_count));
-
-                // Tag selector
-                let tagSelect = itemF.find('.item-tag-select');
-                initSelect(tagSelect, allTags);
-
-                let contentField = itemF.find('.item-content-input');
-                tagSelect.change(function () {
-                    // need to catch add tag pop up
-                    let value = $(this).val();
-                    if (value == 'add-new-tag') {
-                        tag.openForm(tagFormF);
-                        contentField.attr('placeholder', `What have you accomplished?`);
-                    } else {
-                        contentField.attr('placeholder', `Worked on ${value}`);
-                    }
-                });
-
-                // Delete button
-                itemF.find('.delete-item-btn').click(function () {
-                    itemF.remove();
-                });
-                itemContainer.append(itemF);
-
+                addItemBlock(form, allData);
                 uiEngine.run();
             });
-            addBtn.click();
+
+            if (currentNote.items.length == 0) {
+                addBtn.click();
+            } else {
+                uiEngine.run();
+            }
         };
 
         let handleSubmit = function ($form, allData) {
@@ -140,7 +164,8 @@ define([
                 // TODO: need all data for it to work
                 let noteDataToSave = _.cloneDeep(noteData);
                 noteDataToSave['items'] = noteData.items.map(function (item) {
-                    return { tag: allData.tags[item.tag] };
+                    item['tag'] = allData.tags[item.tag];
+                    return item;
                 });
 
                 note.save(noteData)
@@ -157,9 +182,10 @@ define([
             render: function () {
                 return controller.make("new-note", "New Note", function () {
                     let form = $('#new-note-form');
-                    setupInputHidden(form);
+
 
                     return fetchAll.use(function (allData) {
+                        setupInputHidden(form, allData);
                         handleSubmit(form, allData);
                         setupItemContainer(form, allData);
                         form.find('button[type="submit"]').prop('disabled', false);
