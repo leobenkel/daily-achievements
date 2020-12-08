@@ -56,6 +56,22 @@ define([
         }
     };
 
+    let get = function (name) {
+        let r = storage.get(name);
+        // cache was found
+        if (r && config.cache) {
+            r = JSON.parse(r);
+            let time = r.tty;
+            let value = r.value;
+
+            // not expired yet
+            if (getTime() < time) {
+                return value;
+            }
+        }
+        return;
+    }
+
     let smartIterativeCache = function (name, expiration, cacheNeedUpdate, fetchData, combineCache, readyToUseData) {
         let saveData = function (newData) {
             storage.set(name, JSON.stringify({
@@ -97,6 +113,7 @@ define([
 
     return {
         cache: cache,
+        get: get,
         clear: clear,
         update: update,
         smartIterativeCache: smartIterativeCache

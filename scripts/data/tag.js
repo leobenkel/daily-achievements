@@ -1,7 +1,8 @@
 define([
-    'scripts/data/database.js'
+    'scripts/data/database.js',
+    'scripts/util/cache.js'
 ],
-    function (db) {
+    function (db, cache) {
         /*
             * name (require)
             * color_hex (default random) (require)
@@ -133,11 +134,8 @@ define([
 
                     save(toSave).then(function () {
                         closeForm();
-                        return Promise.resolve();
-                    }).then(function () {
-                        return fetchAll();
-                    }).then(function (allTags) {
-                        return cb(allTags);
+                        cache.update("all-notes", `tags.${toSave.name}`, toSave);
+                        return cb(cache.get("all-notes"));
                     });
 
                     return false;

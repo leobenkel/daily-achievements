@@ -15,9 +15,9 @@ define([
 ],
     function (controller, navigator, tag, note, fetchAll, date, storage, cache, uiEngine, $, _, itemForm, tagForm) {
         let tagFormF = $(tagForm);
-        tag.initForm(tagFormF, true, function (allTags) {
+        tag.initForm(tagFormF, true, function (allData) {
             tagFormF.add('body').find('.item-tag-select').each(function (i, sel) {
-                initSelect($(sel), allTags.data);
+                initSelect($(sel), allData);
             })
         });
 
@@ -52,9 +52,11 @@ define([
 
             tagSelect.find('option').remove();
             tagSelect.append('<option disabled selected value> -- select a Tag -- </option>');
-            _.values(allData.tags).forEach(function (tag) {
-                tagSelect.append(`<option value="${tag.name}">${tag.name}</option>`);
-            });
+            if (allData && allData.tags) {
+                _.values(allData.tags).forEach(function (tag) {
+                    tagSelect.append(`<option value="${tag.name}">${tag.name}</option>`);
+                });
+            }
             tagSelect.append('<option value="add-new-tag">Add new tag</option>');
             tagSelect.val(currentValue);
 
